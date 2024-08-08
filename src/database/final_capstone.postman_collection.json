@@ -1,0 +1,628 @@
+{
+	"info": {
+		"_postman_id": "aaafe8fa-175e-4f0c-9593-f7542cfe8428",
+		"name": "final_capstone",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "34764821"
+	},
+	"item": [
+		{
+			"name": "user",
+			"item": [
+				{
+					"name": "post",
+					"item": [
+						{
+							"name": "login",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "",
+										"value": "",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"taiKhoan\": \"user1\",\r\n    \"matKhau\": \"1234\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{domain-user}}/DangNhap"
+							},
+							"response": []
+						},
+						{
+							"name": "signup",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"taiKhoan\": \"user13\",\r\n  \"matKhau\": \"1\",\r\n  \"email\": \"string@12.com\",\r\n  \"soDt\": \"1\",\r\n  \"hoTen\": \"string\",\r\n  \"maNhom\": \"string\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{domain-user}}/DangKy"
+							},
+							"response": []
+						},
+						{
+							"name": "add-user",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "{{token-bearer}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"taiKhoan\": \"nguyenvana\",\r\n  \"matKhau\": \"123\",\r\n  \"email\": \"nguyenvana@gmail.com\",\r\n  \"soDt\": \"123\",\r\n  \"maNhom\": \"gp07\",\r\n  \"hoTen\": \"string\",\r\n  \"maLoaiNguoiDung\": \"quantri\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{domain-user}}/ThemNguoiDung"
+							},
+							"response": []
+						},
+						{
+							"name": "info-owner",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "{{token-bearer}}",
+										"type": "text"
+									}
+								],
+								"url": "{{domain-user}}/ThongTinTaiKhoan"
+							},
+							"response": []
+						},
+						{
+							"name": "update-user",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "{{token-bearer}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"taiKhoan\": \"user1\",\r\n  \"matKhau\": \"123\",\r\n  \"email\": \"123@gmail.com\",\r\n  \"soDt\": \"123\",\r\n  \"maNhom\": \"gp01\",\r\n  \"hoTen\": \"string\",\r\n  \"maLoaiNguoiDung\": \"khachhang\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{domain-user}}/CapNhatThongTinNguoiDung"
+							},
+							"response": []
+						},
+						{
+							"name": "info-user",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "{{token-bearer}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{domain-user}}/LayThongTinNguoiDung?taiKhoan=user1",
+									"host": [
+										"{{domain-user}}"
+									],
+									"path": [
+										"LayThongTinNguoiDung"
+									],
+									"query": [
+										{
+											"key": "taiKhoan",
+											"value": "user1"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "get",
+					"item": [
+						{
+							"name": "get-list-type-user",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "{{token-bearer}}",
+										"type": "text"
+									}
+								],
+								"url": "{{domain-user}}/LayDanhSachLoaiNguoiDung"
+							},
+							"response": []
+						},
+						{
+							"name": "search-user",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "",
+										"value": "",
+										"type": "text",
+										"disabled": true
+									}
+								],
+								"url": {
+									"raw": "{{domain-user}}/TimKiemNguoiDung?tuKhoa=us&maNhom=GP01",
+									"host": [
+										"{{domain-user}}"
+									],
+									"path": [
+										"TimKiemNguoiDung"
+									],
+									"query": [
+										{
+											"key": "tuKhoa",
+											"value": "us"
+										},
+										{
+											"key": "maNhom",
+											"value": "GP01"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "get-list-user",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{domain-user}}/LayDanhSachNguoiDung?maNhom",
+									"host": [
+										"{{domain-user}}"
+									],
+									"path": [
+										"LayDanhSachNguoiDung"
+									],
+									"query": [
+										{
+											"key": "maNhom",
+											"value": null
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "put/delete",
+					"item": [
+						{
+							"name": "update-owner",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "{{token-bearer}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"taiKhoan\": \"user7\",\r\n  \"matKhau\": \"string\",\r\n  \"email\": \"string@g\",\r\n  \"soDt\": \"123\",\r\n  \"maNhom\": \"gp01\",\r\n  \"hoTen\": \"stri\",\r\n  \"maLoaiNguoiDung\": \"quantri\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{domain-user}}/CapNhatThongTinNguoiDung"
+							},
+							"response": []
+						},
+						{
+							"name": "delete-user",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "{{token-bearer}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{domain-user}}/XoaNguoiDung?TaiKhoan=user7",
+									"host": [
+										"{{domain-user}}"
+									],
+									"path": [
+										"XoaNguoiDung"
+									],
+									"query": [
+										{
+											"key": "TaiKhoan",
+											"value": "user7"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "movie",
+			"item": [
+				{
+					"name": "get-banner",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{domain-movie}}/LayDanhSachBanner"
+					},
+					"response": []
+				},
+				{
+					"name": "get-list-movie",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{domain-movie}}/LayDanhSachPhim?maNhom=GP01&tenPhim=the da  ",
+							"host": [
+								"{{domain-movie}}"
+							],
+							"path": [
+								"LayDanhSachPhim"
+							],
+							"query": [
+								{
+									"key": "maNhom",
+									"value": "GP01"
+								},
+								{
+									"key": "tenPhim",
+									"value": "the da  "
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get-info-movie",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{domain-movie}}/LayThongTinPhim?MaPhim=1",
+							"host": [
+								"{{domain-movie}}"
+							],
+							"path": [
+								"LayThongTinPhim"
+							],
+							"query": [
+								{
+									"key": "MaPhim",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "create-movie",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token-bearer}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"tenPhim\": \"string\",\r\n  \"hinhAnh\": \"string.png\",\r\n  \"trailer\": \"https://string.mp4\",\r\n  \"moTa\": \"string\",\r\n  \"maNhom\": \"gp01\",\r\n  \"ngayKhoiChieu\": \"2024-08-07T15:07:16.281Z\",\r\n  \"danhGia\": 0,\r\n  \"hot\": true,\r\n  \"dangChieu\": true,\r\n  \"sapChieu\": true\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{domain-movie}}/ThemPhim"
+					},
+					"response": []
+				},
+				{
+					"name": "delete-movie",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token-bearer}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{domain-movie}}/XoaPhim?maPhim=13",
+							"host": [
+								"{{domain-movie}}"
+							],
+							"path": [
+								"XoaPhim"
+							],
+							"query": [
+								{
+									"key": "maPhim",
+									"value": "13"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "ticket",
+			"item": [
+				{
+					"name": "booking-ticket",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token-bearer}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"maLichChieu\": \"1\",\r\n  \"danhSachVe\": [\r\n    {\r\n      \"maGhe\": \"12\",\r\n      \"giaVe\": 0\r\n    }\r\n  ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "localhost:8080/api/QuanLyDatVe/DatVe"
+					},
+					"response": []
+				},
+				{
+					"name": "create-schedule",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token-bearer}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"maPhim\": \"3\",\r\n  \"ngayChieuGioChieu\": \"01/02/2000 17:00:06\",\r\n  \"maRap\": \"1\",\r\n  \"giaVe\": \"150000\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{domain-ticket}}/TaoLichChieu"
+					},
+					"response": []
+				},
+				{
+					"name": "get-list-room",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{domain-ticket}}/LayDanhSachPhongVe?MaLichChieu=d",
+							"host": [
+								"{{domain-ticket}}"
+							],
+							"path": [
+								"LayDanhSachPhongVe"
+							],
+							"query": [
+								{
+									"key": "MaLichChieu",
+									"value": "d"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "theater",
+			"item": [
+				{
+					"name": "get-info-theater-system",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{domain-theater}}/LayThongTinHeThongRap?maHeThongRap=1",
+							"host": [
+								"{{domain-theater}}"
+							],
+							"path": [
+								"LayThongTinHeThongRap"
+							],
+							"query": [
+								{
+									"key": "maHeThongRap",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get-info-complex-theater",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{domain-theater}}/LayThongTinCumRapTheoHeThong?maHeThongRap=1",
+							"host": [
+								"{{domain-theater}}"
+							],
+							"path": [
+								"LayThongTinCumRapTheoHeThong"
+							],
+							"query": [
+								{
+									"key": "maHeThongRap",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get-showtime-movie",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{domain-theater}}/LayThongTinLichChieuHeThongRap?maHeThongRap=",
+							"host": [
+								"{{domain-theater}}"
+							],
+							"path": [
+								"LayThongTinLichChieuHeThongRap"
+							],
+							"query": [
+								{
+									"key": "maHeThongRap",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get-info-movie",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{domain-theater}}/LayThongTinLichChieuPhim?MaPhim=1",
+							"host": [
+								"{{domain-theater}}"
+							],
+							"path": [
+								"LayThongTinLichChieuPhim"
+							],
+							"query": [
+								{
+									"key": "MaPhim",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "domain-user",
+			"value": "localhost:8080/api/QuanLyNguoiDung",
+			"type": "string"
+		},
+		{
+			"key": "domain-ticket",
+			"value": "localhost:8080/api/QuanLyDatVe",
+			"type": "string"
+		},
+		{
+			"key": "domain-theater",
+			"value": "localhost:8080/api/QuanLyRap\n",
+			"type": "string"
+		},
+		{
+			"key": "domain-movie",
+			"value": "localhost:8080/api/QuanLyPhim",
+			"type": "string"
+		},
+		{
+			"key": "token-bearer",
+			"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7Im5ndW9pRHVuZ0lkIjo3LCJrZXkiOiJab1ppQnoifSwiaWF0IjoxNzIyNzQzNTQ5LCJleHAiOjE3MjMzNDgzNDl9.iS2W_BxTLHQMW19ijElIe7YsXF3WBpMUNR8u6z4p-bo",
+			"type": "string"
+		}
+	]
+}
