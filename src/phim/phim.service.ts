@@ -87,6 +87,20 @@ export class PhimService {
     }
   }
 
+  async getListMoviePage(maNhom: string, tenPhim: string, soTrang: number, soPhanTuTrenTrang: number, res: any) {
+
+    try {
+      let result = {
+        maNhom,
+        tenPhim,
+        soTrang,
+        soPhanTuTrenTrang
+      }
+      this.utilsService.responseSend(res, "Xử lý thành công", result, 200)
+    } catch (err) {
+
+    }
+  }
 
 
   async getInfoMovie(maPhim: string, res: any) {

@@ -17,11 +17,23 @@ export class PhimController {
     return this.phimService.getBanner(res)
   }
 
-  @ApiQuery({ name: 'tenPhim', required: false })
-  @ApiQuery({ name: 'maNhom', required: false })
+
   @Get('LayDanhSachPhim')
-  getListMovie(@Query('tenPhim') query: string, @Query('maNhom') groupCode: string, @Res() res: any) {
+  @ApiQuery({ name: 'maNhom', required: false })
+  @ApiQuery({ name: 'tenPhim', required: false })
+  getListMovie(@Query('maNhom') groupCode: string, @Query('tenPhim') query: string, @Res() res: any) {
     return this.phimService.getListMovie(query, groupCode, res)
+  }
+
+
+
+  @Get('LayDanhSachPhimPhanTrang')
+  @ApiQuery({ name: 'maNhom', required: false, example: "GP01" })
+  @ApiQuery({ name: 'tenPhim', required: false })
+  @ApiQuery({ name: 'soTrang', required: false, example: '1' })
+  @ApiQuery({ name: 'soPhanTuTrenTrang', required: false, example: '10' })
+  getListMoviePage(@Query('maNhom') maNhom: string, @Query('tenPhim') tenPhim: string, @Query('soTrang') soTrang: number, @Query('soPhanTuTrenTrang') soPhanTuTrenTrang: number, @Res() res: any) {
+    return this.phimService.getListMoviePage(maNhom, tenPhim, soTrang, soPhanTuTrenTrang, res)
   }
 
 

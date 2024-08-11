@@ -35,27 +35,44 @@ export class NguoiDungController {
 
   @Post('/DangKy')
   signUp(@Body() body: SignUpNguoiDungDto, @Res() res: any) {
-
     return this.nguoiDungService.signUp(body, res)
-
-
   }
 
 
 
   @Get('LayDanhSachNguoiDung')
-  @ApiQuery({ name: 'maNhom', required: false, example: 'GP01' })
-  getListUser(@Query('maNhom') maNhom: string, @Res() res: any) {
-    return this.nguoiDungService.getListUser(maNhom, res);
+  @ApiQuery({ name: 'MaNhom', required: false, example: 'GP01' })
+  @ApiQuery({ name: 'tuKhoa', required: false })
+  getListUser(@Query('MaNhom') MaNhom: string, @Query('tuKhoa') tuKhoa: string, @Res() res: any) {
+    return this.nguoiDungService.getUserListFind(tuKhoa, MaNhom, res);
+  }
+
+  @Get('LayDanhSachNguoiDungPhanTrang')
+  @ApiQuery({ name: 'MaNhom', required: false, example: 'GP01' })
+  @ApiQuery({ name: 'tuKhoa', required: false })
+  @ApiQuery({ name: 'soTrang', required: false, example: '1' })
+  @ApiQuery({ name: 'soPhanTuTrenTrang', required: false, example: '20' })
+  getListUserPage(@Query('MaNhom') MaNhom: string, @Query('tuKhoa') tuKhoa: string, @Query('soTrang') soTrang: string, @Query('soPhanTuTrenTrang') soPhanTuTrenTrang: string, @Res() res: any) {
+    return this.nguoiDungService.getListUserPage(MaNhom, tuKhoa, soTrang, soPhanTuTrenTrang, res);
   }
 
 
 
   @Get('TimKiemNguoiDung')
-  @ApiQuery({ name: 'maNhom', required: false, example: 'GP01' })
+  @ApiQuery({ name: 'MaNhom', required: false, example: 'GP01' })
   @ApiQuery({ name: 'tuKhoa', required: false })
-  findUser(@Query('tuKhoa') tuKhoa: string, @Query('maNhom') maNhom: string, @Res() res: Response) {
-    return this.nguoiDungService.findUser(tuKhoa, maNhom, res);
+  findUser(@Query('MaNhom') MaNhom: string, @Query('tuKhoa') tuKhoa: string, @Res() res: Response) {
+    return this.nguoiDungService.getUserListFind(tuKhoa, MaNhom, res);
+  }
+
+
+  @Get('TimKiemNguoiDungPhanTrang')
+  @ApiQuery({ name: 'MaNhom', required: false, example: 'GP01' })
+  @ApiQuery({ name: 'tuKhoa', required: false })
+  @ApiQuery({ name: 'soTrang', required: false, example: '1' })
+  @ApiQuery({ name: 'soPhanTuTrenTrang', required: false, example: '1' })
+  findUserPage(@Query('MaNhom') MaNhom: string, @Query('tuKhoa') tuKhoa: string, @Query('soTrang') soTrang: string, @Query('soPhanTuTrenTrang') soPhanTuTrenTrang: string, @Res() res: any) {
+    return this.nguoiDungService.getListUserPage(MaNhom, tuKhoa, soTrang, soPhanTuTrenTrang, res);
   }
 
 
