@@ -42,8 +42,8 @@ const isValidURL = (url: string): boolean => {
 };
 
 const checkGroupCode = (value: string): boolean => {
-    let validGroupCodes = Array.from({ length: 16 }, (_, i) => `gp${i.toString().padStart(2, '0')}`);
-    let checkValidCode = validGroupCodes.includes(value.toLowerCase())
+    let validGroupCodes = Array.from({ length: 16 }, (_, i) => `GP${i.toString().padStart(2, '0')}`);
+    let checkValidCode = validGroupCodes.includes(value.toUpperCase())
     return checkValidCode
 }
 

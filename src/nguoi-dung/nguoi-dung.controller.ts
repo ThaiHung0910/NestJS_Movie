@@ -44,7 +44,7 @@ export class NguoiDungController {
   @ApiQuery({ name: 'MaNhom', required: false, example: 'GP01' })
   @ApiQuery({ name: 'tuKhoa', required: false })
   getListUser(@Query('MaNhom') MaNhom: string, @Query('tuKhoa') tuKhoa: string, @Res() res: any) {
-    return this.nguoiDungService.getUserListFind(tuKhoa, MaNhom, res);
+    return this.nguoiDungService.getUserListSearch(tuKhoa, MaNhom, res);
   }
 
   @Get('LayDanhSachNguoiDungPhanTrang')
@@ -61,8 +61,8 @@ export class NguoiDungController {
   @Get('TimKiemNguoiDung')
   @ApiQuery({ name: 'MaNhom', required: false, example: 'GP01' })
   @ApiQuery({ name: 'tuKhoa', required: false })
-  findUser(@Query('MaNhom') MaNhom: string, @Query('tuKhoa') tuKhoa: string, @Res() res: Response) {
-    return this.nguoiDungService.getUserListFind(tuKhoa, MaNhom, res);
+  findListUser(@Query('MaNhom') MaNhom: string, @Query('tuKhoa') tuKhoa: string, @Res() res: Response) {
+    return this.nguoiDungService.getUserListSearch(tuKhoa, MaNhom, res);
   }
 
 

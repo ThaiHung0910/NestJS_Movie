@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { CreatePhimDto } from './dto/create-phim.dto';
 import { PrismaClient } from '@prisma/client';
 import { UtilsService } from 'src/utils';
-import { validationMovie } from 'src/utils/validation';
+import { checkGroupCode, validationMovie } from 'src/utils/validation';
 
 
 @Injectable()
@@ -88,18 +88,111 @@ export class PhimService {
   }
 
   async getListMoviePage(maNhom: string, tenPhim: string, soTrang: number, soPhanTuTrenTrang: number, res: any) {
-
     try {
-      let result = {
-        maNhom,
-        tenPhim,
-        soTrang,
-        soPhanTuTrenTrang
+      let numberItemPerPage = Number(soPhanTuTrenTrang), page = Number(soTrang)
+      let dataMessageError = (message: string) => {
+        return this.utilsService.responseSend(res, "Dữ liệu không hợp lệ!", message, 400);
       }
-      this.utilsService.responseSend(res, "Xử lý thành công", result, 200)
-    } catch (err) {
 
+
+      if (soPhanTuTrenTrang && !Number.isInteger(numberItemPerPage)) {
+        dataMessageError("Số phần tử trên trang không hợp lệ")
+      }
+      if (soTrang && !Number.isInteger(page)) {
+        dataMessageError("Số trang không hợp lệ")
+      }
+
+      let movies: any, result = {
+        currentPage: 0,
+        count: 0,
+        totalPages: 0,
+        totalCount: 0,
+        items: []
+      }
+
+
+      if (maNhom) {
+        if (!checkGroupCode(maNhom)) {
+          dataMessageError("Mã nhóm không hợp lệ")
+        }
+        movies = await this.prisma.phim.findMany({
+          where: {
+            AND: [
+              { ma_nhom: maNhom },
+              tenPhim ? { ten_phim: { contains: tenPhim } } : {}
+            ]
+          }
+        });
+      } else {
+        if (tenPhim) {
+          movies = await this.prisma.phim.findMany({
+            where: {
+              AND: [
+                { ma_nhom: "GP01" },
+                { ten_phim: { contains: tenPhim } },
+              ]
+            }
+          })
+        } else {
+          movies = await this.prisma.phim.findMany({
+            where: {
+              ma_nhom: "GP01"
+            }
+          })
+        }
+      }
+
+      let moviesLength = movies.length
+
+      result.currentPage = page ? page : 1
+      if (moviesLength) {
+        result.totalCount = moviesLength
+        result.totalPages = numberItemPerPage ? Math.ceil(moviesLength / numberItemPerPage) : 1
+
+        let countItem = 0
+        movies.forEach((movie: any, index: any) => {
+          let { ma_phim, ten_phim, trailer, hinh_anh, mo_ta, ma_nhom, ngay_khoi_chieu, danh_gia, hot, dang_chieu, sap_chieu } = movie
+          let calculate = () => {
+            result.items.push(({
+              maPhim: ma_phim,
+              tenPhim: ten_phim,
+              trailer: trailer,
+              hinhAnh: hinh_anh,
+              moTa: mo_ta,
+              maNhom: ma_nhom,
+              ngayKhoiChieu: ngay_khoi_chieu,
+              danhGia: danh_gia,
+              hot,
+              dangChieu: dang_chieu,
+              sapChieu: sap_chieu
+            }))
+            countItem++
+          }
+          if (numberItemPerPage) {
+            if (page == 1) {
+              if (countItem < numberItemPerPage) {
+                calculate()
+              }
+            } else {
+              if (index >= (page - 1) * numberItemPerPage && countItem < numberItemPerPage) {
+                calculate()
+              }
+            }
+          } else {
+            if (result.currentPage < 2) {
+              calculate()
+            }
+          }
+        });
+        result.count = countItem
+      }
+
+
+      this.utilsService.responseSend(res, "Xử lý thành công!", result, 200);
+    } catch (err) {
+      this.utilsService.responseSend(res, err.message, "", 500);
     }
+
   }
 
 
