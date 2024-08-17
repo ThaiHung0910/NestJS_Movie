@@ -4,6 +4,7 @@ import { CreatePhimDto } from './dto/create-phim.dto';
 import { PrismaClient } from '@prisma/client';
 import { UtilsService } from 'src/utils';
 import { checkGroupCode, validationMovie } from 'src/utils/validation';
+import { UpdatePhimDto } from './dto/update-phim.dto';
 
 
 @Injectable()
@@ -13,6 +14,7 @@ export class PhimService {
     private readonly utilsService: UtilsService,
     private readonly authService: AuthService
   ) { }
+
 
 
   async getBanner(res: any) {
@@ -87,7 +89,7 @@ export class PhimService {
     }
   }
 
-  async getListMoviePage(maNhom: string, tenPhim: string, soTrang: number, soPhanTuTrenTrang: number, res: any) {
+  async getPaginationMovieList(maNhom: string, tenPhim: string, soTrang: number, soPhanTuTrenTrang: number, res: any) {
     try {
       let numberItemPerPage = Number(soPhanTuTrenTrang), page = Number(soTrang)
       let dataMessageError = (message: string) => {
@@ -195,6 +197,109 @@ export class PhimService {
 
   }
 
+  async getMovieListByDate(maNhom: string, tenPhim: string, soTrang: number, soPhanTuTrenTrang: number, tuNgay: string, denNgay: string, res: any) {
+    try {
+      let numberItemPerPage = Number(soPhanTuTrenTrang);
+      let page = Number(soTrang);
+
+      const dataMessageError = (message: string) => {
+        return this.utilsService.responseSend(res, "Dữ liệu không hợp lệ!", message, 400);
+      }
+
+      if (numberItemPerPage && !Number.isInteger(numberItemPerPage)) {
+        return dataMessageError("Số phần tử trên trang không hợp lệ");
+      }
+      if (page && !Number.isInteger(page)) {
+        return dataMessageError("Số trang không hợp lệ");
+      }
+
+      let formatDate = (date: string): Date | undefined => {
+        if (date) {
+          const [day, month, year] = date.split('/').map(Number);
+          return new Date(year, month, day);
+        }
+        return undefined
+      }
+
+      const formattedTuNgay = formatDate(tuNgay);
+      const formattedDenNgay = formatDate(denNgay);
+
+
+      let movies: any;
+      if (maNhom) {
+        if (!checkGroupCode(maNhom)) {
+          return dataMessageError("Mã nhóm không hợp lệ");
+        }
+
+        movies = await this.prisma.phim.findMany({
+          where: {
+            AND: [
+              { ma_nhom: maNhom },
+              tenPhim ? { ten_phim: { contains: tenPhim } } : {},
+              formattedTuNgay && formattedDenNgay ? { ngay_khoi_chieu: { gte: formattedTuNgay, lte: formattedDenNgay } } :
+                (formattedTuNgay ? { ngay_khoi_chieu: { gte: formattedTuNgay } } : {}),
+            ]
+          }
+        });
+      } else {
+        movies = await this.prisma.phim.findMany({
+          where: {
+            AND: [
+              { ma_nhom: "GP01" },
+              tenPhim ? { ten_phim: { contains: tenPhim } } : {},
+            ]
+          }
+        });
+      }
+
+      let result = [];
+      let countItem = 0;
+      movies.forEach((movie: any, index: number) => {
+        if (numberItemPerPage) {
+          if (page == 1) {
+            if (countItem < numberItemPerPage) {
+              result.push({
+                maPhim: movie.ma_phim,
+                tenPhim: movie.ten_phim,
+                trailer: movie.trailer,
+                hinhAnh: movie.hinh_anh,
+                moTa: movie.mo_ta,
+                maNhom: movie.ma_nhom,
+                ngayKhoiChieu: movie.ngay_khoi_chieu,
+                danhGia: movie.danh_gia,
+                hot: movie.hot,
+                dangChieu: movie.dang_chieu,
+                sapChieu: movie.sap_chieu
+              });
+              countItem++;
+            }
+          } else {
+            if (index >= (page - 1) * numberItemPerPage && countItem < numberItemPerPage) {
+              result.push({
+                maPhim: movie.ma_phim,
+                tenPhim: movie.ten_phim,
+                trailer: movie.trailer,
+                hinhAnh: movie.hinh_anh,
+                moTa: movie.mo_ta,
+                maNhom: movie.ma_nhom,
+                ngayKhoiChieu: movie.ngay_khoi_chieu,
+                danhGia: movie.danh_gia,
+                hot: movie.hot,
+                dangChieu: movie.dang_chieu,
+                sapChieu: movie.sap_chieu
+              });
+              countItem++;
+            }
+          }
+        }
+      });
+
+      this.utilsService.responseSend(res, "Xử lý thành công!", result, 200);
+    } catch (err) {
+      this.utilsService.responseSend(res, err.message, "", 500);
+    }
+  }
+
 
   async getInfoMovie(maPhim: string, res: any) {
     try {
@@ -232,6 +337,50 @@ export class PhimService {
 
       this.utilsService.responseSend(res, "Xử lý thành công!", result, 200);
 
+    } catch (err) {
+      this.utilsService.responseSend(res, err.message, "", 500);
+    }
+  }
+
+  async updateMovie(body: UpdatePhimDto, res: any) {
+    try {
+      let { tenPhim, hinhAnh, trailer, moTa, maNhom, ngayKhoiChieu, danhGia, hot, dangChieu, sapChieu } = body
+
+      let validationMessage = validationMovie(body)
+      if (validationMessage) {
+        return this.utilsService.responseSend(res, "Dữ liệu không hợp lệ!", validationMessage, 403);
+      }
+
+      let movie = await this.prisma.phim.findFirst({
+        where: {
+          ten_phim: tenPhim
+        }
+      })
+
+      let newMovie = {
+        ten_phim: tenPhim,
+        hinh_anh: hinhAnh,
+        trailer: trailer,
+        mo_ta: moTa,
+        ma_nhom: maNhom,
+        ngay_khoi_chieu: ngayKhoiChieu,
+        danh_gia: Number(danhGia),
+        hot: Boolean(hot),
+        dang_chieu: Boolean(dangChieu),
+        sap_chieu: Boolean(sapChieu),
+      }
+      if (!movie) {
+        return this.utilsService.responseSend(res, "Dữ liệu không hợp lệ!", "Không tìm thấy phim!", 403);
+      }
+
+      await this.prisma.phim.update({
+        where: {
+          ma_phim: movie.ma_phim
+        },
+        data: newMovie
+      })
+
+      this.utilsService.responseSend(res, "Xử lý thành công!", movie, 200);
     } catch (err) {
       this.utilsService.responseSend(res, err.message, "", 500);
     }

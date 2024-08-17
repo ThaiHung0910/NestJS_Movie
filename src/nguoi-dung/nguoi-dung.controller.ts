@@ -52,8 +52,8 @@ export class NguoiDungController {
   @ApiQuery({ name: 'tuKhoa', required: false })
   @ApiQuery({ name: 'soTrang', required: false, example: '1' })
   @ApiQuery({ name: 'soPhanTuTrenTrang', required: false, example: '20' })
-  getListUserPage(@Query('MaNhom') MaNhom: string, @Query('tuKhoa') tuKhoa: string, @Query('soTrang') soTrang: string, @Query('soPhanTuTrenTrang') soPhanTuTrenTrang: string, @Res() res: any) {
-    return this.nguoiDungService.getListUserPage(MaNhom, tuKhoa, soTrang, soPhanTuTrenTrang, res);
+  getPaginationUserList(@Query('MaNhom') MaNhom: string, @Query('tuKhoa') tuKhoa: string, @Query('soTrang') soTrang: string, @Query('soPhanTuTrenTrang') soPhanTuTrenTrang: string, @Res() res: any) {
+    return this.nguoiDungService.getPaginationUserList(MaNhom, tuKhoa, soTrang, soPhanTuTrenTrang, res);
   }
 
 
@@ -72,7 +72,7 @@ export class NguoiDungController {
   @ApiQuery({ name: 'soTrang', required: false, example: '1' })
   @ApiQuery({ name: 'soPhanTuTrenTrang', required: false, example: '1' })
   findUserPage(@Query('MaNhom') MaNhom: string, @Query('tuKhoa') tuKhoa: string, @Query('soTrang') soTrang: string, @Query('soPhanTuTrenTrang') soPhanTuTrenTrang: string, @Res() res: any) {
-    return this.nguoiDungService.getListUserPage(MaNhom, tuKhoa, soTrang, soPhanTuTrenTrang, res);
+    return this.nguoiDungService.getPaginationUserList(MaNhom, tuKhoa, soTrang, soPhanTuTrenTrang, res);
   }
 
 

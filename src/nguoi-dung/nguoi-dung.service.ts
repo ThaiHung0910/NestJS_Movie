@@ -332,7 +332,7 @@ export class NguoiDungService {
     }
   }
 
-  async getListUserPage(maNhom: string, tuKhoa: string, soTrang: string, soPhanTuTrenTrang: string, res: any) {
+  async getPaginationUserList(maNhom: string, tuKhoa: string, soTrang: string, soPhanTuTrenTrang: string, res: any) {
     try {
       let numberItemPerPage = Number(soPhanTuTrenTrang), page = Number(soTrang)
       let dataMessageError = (message: string) => {

@@ -105,21 +105,8 @@ const validationMovie = (data: any): string | null => {
     return null;
 }
 
-const validationImage = (data: any): string | null => {
-    const { tenHinh, duongDan, moTa } = data;
-
-    if (!isNotEmpty(tenHinh) || !isNotEmpty(duongDan) || !isNotEmpty(moTa)) {
-        return "Dữ liệu không được để trống";
-    }
-
-    if (!isValidURL(duongDan)) {
-        return "Đường dẫn không đúng định dạng";
-    }
-
-    return null;
-};
 
 
 
 
-export { isNotEmpty, isValidNumber, validationUser, validationMovie, validationImage, checkGroupCode };
+export { isNotEmpty, isValidNumber, validationUser, validationMovie, checkGroupCode };
