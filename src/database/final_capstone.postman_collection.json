@@ -222,6 +222,76 @@
 								}
 							},
 							"response": []
+						},
+						{
+							"name": "get-pagination-user-list",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{domain-user}}/LayDanhSachNguoiDungPhanTrang?MaNhom=GP01&tuKhoa&soTrang&soPhanTuTrenTrang",
+									"host": [
+										"{{domain-user}}"
+									],
+									"path": [
+										"LayDanhSachNguoiDungPhanTrang"
+									],
+									"query": [
+										{
+											"key": "MaNhom",
+											"value": "GP01"
+										},
+										{
+											"key": "tuKhoa",
+											"value": null
+										},
+										{
+											"key": "soTrang",
+											"value": null
+										},
+										{
+											"key": "soPhanTuTrenTrang",
+											"value": null
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "search-pagination-user-list",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{domain-user}}/LayDanhSachNguoiDungPhanTrang?MaNhom=GP07&tuKhoa&soTrang=1&soPhanTuTrenTrang=1",
+									"host": [
+										"{{domain-user}}"
+									],
+									"path": [
+										"LayDanhSachNguoiDungPhanTrang"
+									],
+									"query": [
+										{
+											"key": "MaNhom",
+											"value": "GP07"
+										},
+										{
+											"key": "tuKhoa",
+											"value": null
+										},
+										{
+											"key": "soTrang",
+											"value": "1"
+										},
+										{
+											"key": "soPhanTuTrenTrang",
+											"value": "1"
+										}
+									]
+								}
+							},
+							"response": []
 						}
 					]
 				},
@@ -367,7 +437,7 @@
 								}
 							}
 						},
-						"url": "{{domain-movie}}/ThemPhim"
+						"url": "{{domain-movie}}"
 					},
 					"response": []
 				},
@@ -397,6 +467,149 @@
 								}
 							]
 						}
+					},
+					"response": []
+				},
+				{
+					"name": "XP",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token-bearer}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{domain-movie}}/XoaPhim?maPhim=13",
+							"host": [
+								"{{domain-movie}}"
+							],
+							"path": [
+								"XoaPhim"
+							],
+							"query": [
+								{
+									"key": "maPhim",
+									"value": "13"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get-list-movie-by-date",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{domain-movie}}/LayDanhSachPhimTheoNgay?maNhom=GP01&tenPhim&soTrang=1&soPhanTuTrenTrang=20&tuNgay=&denNgay",
+							"host": [
+								"{{domain-movie}}"
+							],
+							"path": [
+								"LayDanhSachPhimTheoNgay"
+							],
+							"query": [
+								{
+									"key": "maNhom",
+									"value": "GP01"
+								},
+								{
+									"key": "tenPhim",
+									"value": null
+								},
+								{
+									"key": "soTrang",
+									"value": "1"
+								},
+								{
+									"key": "soPhanTuTrenTrang",
+									"value": "20"
+								},
+								{
+									"key": "tuNgay",
+									"value": ""
+								},
+								{
+									"key": "denNgay",
+									"value": null
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get-pagination-movie-list",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{domain-movie}}/LayDanhSachPhimPhanTrang?maNhom=GP01&tenPhim&soTrang=1&soPhanTuTrenTrang=20",
+							"host": [
+								"{{domain-movie}}"
+							],
+							"path": [
+								"LayDanhSachPhimPhanTrang"
+							],
+							"query": [
+								{
+									"key": "maNhom",
+									"value": "GP01"
+								},
+								{
+									"key": "tenPhim",
+									"value": null
+								},
+								{
+									"key": "soTrang",
+									"value": "1"
+								},
+								{
+									"key": "soPhanTuTrenTrang",
+									"value": "20"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "add-movie-upload-picture",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"tenPhim\": \"string\",\r\n  \"hinhAnh\": \"string.png\",\r\n  \"trailer\": \"https://string.com\",\r\n  \"moTa\": \"string\",\r\n  \"maNhom\": \"gp01\",\r\n  \"ngayKhoiChieu\": \"2024-08-17T15:25:53.920Z\",\r\n  \"danhGia\": 0,\r\n  \"hot\": true,\r\n  \"dangChieu\": true,\r\n  \"sapChieu\": true\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{domain-movie}}/ThemPhimUploadHinh"
+					},
+					"response": []
+				},
+				{
+					"name": "update-movie",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"tenPhim\": \"string\",\r\n  \"hinhAnh\": \"string.png\",\r\n  \"trailer\": \"https://string.com\",\r\n  \"moTa\": \"string\",\r\n  \"maNhom\": \"gp01\",\r\n  \"ngayKhoiChieu\": \"2024-08-17T15:25:53.920Z\",\r\n  \"danhGia\": 0,\r\n  \"hot\": true,\r\n  \"dangChieu\": true,\r\n  \"sapChieu\": true\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{domain-movie}}/CapNhatPhimUpload"
 					},
 					"response": []
 				}

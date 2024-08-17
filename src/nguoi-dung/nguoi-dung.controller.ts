@@ -71,7 +71,7 @@ export class NguoiDungController {
   @ApiQuery({ name: 'tuKhoa', required: false })
   @ApiQuery({ name: 'soTrang', required: false, example: '1' })
   @ApiQuery({ name: 'soPhanTuTrenTrang', required: false, example: '1' })
-  findUserPage(@Query('MaNhom') MaNhom: string, @Query('tuKhoa') tuKhoa: string, @Query('soTrang') soTrang: string, @Query('soPhanTuTrenTrang') soPhanTuTrenTrang: string, @Res() res: any) {
+  findPaginationUserList(@Query('MaNhom') MaNhom: string, @Query('tuKhoa') tuKhoa: string, @Query('soTrang') soTrang: string, @Query('soPhanTuTrenTrang') soPhanTuTrenTrang: string, @Res() res: any) {
     return this.nguoiDungService.getPaginationUserList(MaNhom, tuKhoa, soTrang, soPhanTuTrenTrang, res);
   }
 

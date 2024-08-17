@@ -44,7 +44,7 @@ export class PhimController {
   @ApiQuery({ name: 'soPhanTuTrenTrang', required: false, example: '10' })
   @ApiQuery({ name: 'tuNgay', required: false })
   @ApiQuery({ name: 'denNgay', required: false })
-  getListMovieDate(@Query('maNhom') maNhom: string, @Query('tenPhim') tenPhim: string, @Query('soTrang') soTrang: number, @Query('soPhanTuTrenTrang') soPhanTuTrenTrang: number, @Query("tuNgay") tuNgay: string, @Query("denNgay") denNgay: string, @Res() res: any) {
+  getListMovieByDate(@Query('maNhom') maNhom: string, @Query('tenPhim') tenPhim: string, @Query('soTrang') soTrang: number, @Query('soPhanTuTrenTrang') soPhanTuTrenTrang: number, @Query("tuNgay") tuNgay: string, @Query("denNgay") denNgay: string, @Res() res: any) {
     return this.phimService.getMovieListByDate(maNhom, tenPhim, soTrang, soPhanTuTrenTrang, tuNgay, denNgay, res)
   }
 
@@ -54,7 +54,7 @@ export class PhimController {
 
 
   @Post('ThemPhimUploadHinh')
-  uploadPicture(@Body() createPhimDto: CreatePhimDto, @Res() res: any) {
+  addMovieUploadPicture(@Body() createPhimDto: CreatePhimDto, @Res() res: any) {
     return this.phimService.addMovie(createPhimDto, res);
   }
 

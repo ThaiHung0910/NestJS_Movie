@@ -226,73 +226,65 @@ export class PhimService {
 
 
       let movies: any;
-      if (maNhom) {
-        if (!checkGroupCode(maNhom)) {
-          return dataMessageError("Mã nhóm không hợp lệ");
-        }
 
-        movies = await this.prisma.phim.findMany({
-          where: {
-            AND: [
-              { ma_nhom: maNhom },
-              tenPhim ? { ten_phim: { contains: tenPhim } } : {},
-              formattedTuNgay && formattedDenNgay ? { ngay_khoi_chieu: { gte: formattedTuNgay, lte: formattedDenNgay } } :
-                (formattedTuNgay ? { ngay_khoi_chieu: { gte: formattedTuNgay } } : {}),
-            ]
-          }
-        });
+      if (!formattedTuNgay && !formattedDenNgay) {
+        movies = []
       } else {
         movies = await this.prisma.phim.findMany({
           where: {
+            ma_nhom: maNhom || "GP01",
             AND: [
-              { ma_nhom: "GP01" },
               tenPhim ? { ten_phim: { contains: tenPhim } } : {},
+              {
+                ngay_khoi_chieu: {
+                  gte: formattedTuNgay ? formattedTuNgay : undefined,
+                  lte: formattedDenNgay ? formattedDenNgay : undefined,
+                }
+              }
             ]
+          }
+        });
+
+      }
+
+
+      let result = [];
+      if (movies.length) {
+        let countItem = 0;
+        movies.forEach((movie: any, index: number) => {
+          let { ma_phim, ten_phim, trailer, hinh_anh, mo_ta, ma_nhom, ngay_khoi_chieu, danh_gia, hot, dang_chieu, sap_chieu } = movie
+          let calculate = () => {
+            result.push({
+              maPhim: ma_phim,
+              tenPhim: ten_phim,
+              trailer: trailer,
+              hinhAnh: hinh_anh,
+              moTa: mo_ta,
+              maNhom: ma_nhom,
+              ngayKhoiChieu: ngay_khoi_chieu,
+              danhGia: danh_gia,
+              hot,
+              dangChieu: dang_chieu,
+              sapChieu: sap_chieu
+            });
+            countItem++;
+          }
+          if (numberItemPerPage) {
+            if (page == 1) {
+              if (countItem < numberItemPerPage) {
+                calculate()
+              }
+            } else {
+              if (index >= (page - 1) * numberItemPerPage && countItem < numberItemPerPage) {
+                calculate()
+              }
+            }
           }
         });
       }
 
-      let result = [];
-      let countItem = 0;
-      movies.forEach((movie: any, index: number) => {
-        if (numberItemPerPage) {
-          if (page == 1) {
-            if (countItem < numberItemPerPage) {
-              result.push({
-                maPhim: movie.ma_phim,
-                tenPhim: movie.ten_phim,
-                trailer: movie.trailer,
-                hinhAnh: movie.hinh_anh,
-                moTa: movie.mo_ta,
-                maNhom: movie.ma_nhom,
-                ngayKhoiChieu: movie.ngay_khoi_chieu,
-                danhGia: movie.danh_gia,
-                hot: movie.hot,
-                dangChieu: movie.dang_chieu,
-                sapChieu: movie.sap_chieu
-              });
-              countItem++;
-            }
-          } else {
-            if (index >= (page - 1) * numberItemPerPage && countItem < numberItemPerPage) {
-              result.push({
-                maPhim: movie.ma_phim,
-                tenPhim: movie.ten_phim,
-                trailer: movie.trailer,
-                hinhAnh: movie.hinh_anh,
-                moTa: movie.mo_ta,
-                maNhom: movie.ma_nhom,
-                ngayKhoiChieu: movie.ngay_khoi_chieu,
-                danhGia: movie.danh_gia,
-                hot: movie.hot,
-                dangChieu: movie.dang_chieu,
-                sapChieu: movie.sap_chieu
-              });
-              countItem++;
-            }
-          }
-        }
-      });
+
+
 
       this.utilsService.responseSend(res, "Xử lý thành công!", result, 200);
     } catch (err) {
