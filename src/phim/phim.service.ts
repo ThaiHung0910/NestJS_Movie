@@ -40,28 +40,31 @@ export class PhimService {
   async getListMovie(tenPhim: string, maNhom: string, res: any) {
     try {
       let listMovies
-      tenPhim = tenPhim.trim(), maNhom = maNhom.trim()
-      if (tenPhim && maNhom) {
+      tenPhim = tenPhim ? tenPhim.trim() : tenPhim, maNhom = maNhom ? maNhom.trim() : maNhom
+      if (maNhom) {
         listMovies = await this.prisma.phim.findMany({
           where: {
-            ten_phim: { contains: tenPhim },
-            ma_nhom: maNhom
-          }
-        })
-      } else if (maNhom) {
-        listMovies = await this.prisma.phim.findMany({
-          where: {
-            ma_nhom: maNhom
+            AND: [
+              tenPhim ? { ten_phim: { contains: tenPhim } } : {},
+              { ma_nhom: maNhom }
+            ]
           }
         })
       } else if (tenPhim) {
         listMovies = await this.prisma.phim.findMany({
           where: {
+            ma_nhom: "GP01",
             ten_phim: { contains: tenPhim }
           }
         })
       } else {
-        listMovies = await this.prisma.phim.findMany()
+        listMovies = await this.prisma.phim.findMany(
+          {
+            where: {
+              ma_nhom: "GP01"
+            }
+          }
+        )
       }
 
       if (listMovies.length) {
@@ -354,7 +357,7 @@ export class PhimService {
         hinh_anh: hinhAnh,
         trailer: trailer,
         mo_ta: moTa,
-        ma_nhom: maNhom,
+        ma_nhom: maNhom.toUpperCase(),
         ngay_khoi_chieu: ngayKhoiChieu,
         danh_gia: Number(danhGia),
         hot: Boolean(hot),
@@ -393,7 +396,7 @@ export class PhimService {
         hinh_anh: hinhAnh,
         trailer: trailer,
         mo_ta: moTa,
-        ma_nhom: maNhom,
+        ma_nhom: maNhom.toUpperCase(),
         ngay_khoi_chieu: ngayKhoiChieu,
         danh_gia: Number(danhGia),
         hot: Boolean(hot),

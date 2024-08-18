@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Query, Req, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Post, Query, Req, Res, UseGuards } from '@nestjs/common';
 import { DatVeService } from './dat-ve.service';
 import { ApiBearerAuth, ApiBody, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { CreateTicketDto } from './dto/create-ticket.dto';
@@ -12,6 +12,7 @@ export class DatVeController {
   constructor(private readonly datVeService: DatVeService) {
   }
 
+  @HttpCode(200)
   @ApiBearerAuth()
   @UseGuards(AuthGuard("jwt"))
   @ApiBody({
@@ -33,7 +34,7 @@ export class DatVeController {
   }
 
 
-
+  @HttpCode(200)
   @ApiBearerAuth()
   @UseGuards(AuthGuard("jwt"))
   @ApiBody({

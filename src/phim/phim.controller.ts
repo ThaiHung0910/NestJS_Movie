@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Res, Query, UseGuards, Req, } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Res, Query, UseGuards, Req, HttpCode, } from '@nestjs/common';
 import { PhimService } from './phim.service';
 import { CreatePhimDto } from './dto/create-phim.dto';
 import { ApiQuery, ApiTags, ApiBearerAuth } from '@nestjs/swagger';
@@ -20,7 +20,7 @@ export class PhimController {
 
 
   @Get('LayDanhSachPhim')
-  @ApiQuery({ name: 'maNhom', required: false })
+  @ApiQuery({ name: 'maNhom', required: false, example: "GP01" })
   @ApiQuery({ name: 'tenPhim', required: false })
   getListMovie(@Query('maNhom') groupCode: string, @Query('tenPhim') query: string, @Res() res: any) {
     return this.phimService.getListMovie(query, groupCode, res)
@@ -52,20 +52,21 @@ export class PhimController {
 
 
 
-
+  @HttpCode(200)
   @Post('ThemPhimUploadHinh')
   addMovieUploadPicture(@Body() createPhimDto: CreatePhimDto, @Res() res: any) {
     return this.phimService.addMovie(createPhimDto, res);
   }
 
 
-
+  @HttpCode(200)
   @Post('CapNhatPhimUpload')
   updateMovie(@Body() updatePhimDto: UpdatePhimDto, @Res() res: any) {
     return this.phimService.updateMovie(updatePhimDto, res);
   }
 
 
+  @HttpCode(200)
   @Post('')
   addMovie(@Body() createPhimDto: CreatePhimDto, @Res() res: any) {
     return this.phimService.addMovie(createPhimDto, res);
@@ -75,18 +76,18 @@ export class PhimController {
 
   @ApiBearerAuth()
   @UseGuards(AuthGuard("jwt"))
-  @ApiQuery({ name: 'maPhim', required: false })
+  @ApiQuery({ name: 'MaPhim', required: false })
   @Delete('XP')
-  deleteMovie(@Query('maPhim') query: string, @Req() req: Request, @Res() res: any) {
+  deleteMovie(@Query('MaPhim') query: string, @Req() req: Request, @Res() res: any) {
     const authorization = req.headers;
     return this.phimService.removeMovie(query, authorization, res);
   }
 
   @ApiBearerAuth()
   @UseGuards(AuthGuard("jwt"))
-  @ApiQuery({ name: 'maPhim', required: false })
+  @ApiQuery({ name: 'MaPhim', required: false })
   @Delete('XoaPhim')
-  removeMovie(@Query('maPhim') query: string, @Req() req: Request, @Res() res: any) {
+  removeMovie(@Query('MaPhim') query: string, @Req() req: Request, @Res() res: any) {
     const authorization = req.headers;
     return this.phimService.removeMovie(query, authorization, res);
   }
