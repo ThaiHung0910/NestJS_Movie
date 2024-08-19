@@ -16,6 +16,7 @@ export class NguoiDungController {
 
 
 
+
   @Get("LayDanhSachLoaiNguoiDung")
   getListTypeUser(@Res() res: Response) {
     return this.nguoiDungService.getListTypeUser(res)
@@ -63,7 +64,6 @@ export class NguoiDungController {
   getPaginationUserList(@Query('MaNhom') MaNhom: string, @Query('tuKhoa') tuKhoa: string, @Query('soTrang') soTrang: string, @Query('soPhanTuTrenTrang') soPhanTuTrenTrang: string, @Res() res: any) {
     return this.nguoiDungService.getPaginationUserList(MaNhom, tuKhoa, soTrang, soPhanTuTrenTrang, res);
   }
-
 
 
   @Get('TimKiemNguoiDung')

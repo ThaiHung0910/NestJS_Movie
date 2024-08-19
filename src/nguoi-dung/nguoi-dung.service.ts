@@ -16,12 +16,21 @@ export class NguoiDungService {
   private prisma = new PrismaClient();
   constructor(
     private readonly authService: AuthService,
-    private readonly utilsService: UtilsService,
+    public utilsService: UtilsService,
   ) { }
 
 
+  private async findUserByCriteria(criteria: any) {
+    return this.prisma.nguoi_dung.findFirst({ where: criteria });
+  }
 
-  async checkDuplicateUser(taiKhoan: string, email: string, res: any) {
+  private async findUsersByCriteria(criteria: any) {
+    return this.prisma.nguoi_dung.findMany({ where: criteria });
+  }
+
+
+
+  async checkDuplicateUser(taiKhoan: string, email: string): Promise<string | null> {
     const existingUser = await this.prisma.nguoi_dung.findFirst({
       where: {
         OR: [
@@ -32,51 +41,50 @@ export class NguoiDungService {
     });
 
     if (existingUser) {
-      if (existingUser.email === email) {
-        return this.utilsService.responseSend(res, "Không tìm thấy tài nguyên!", "Email đã tồn tại", 404)
-      }
-      if (existingUser.tai_khoan === taiKhoan) {
-        return this.utilsService.responseSend(res, "Không tìm thấy tài nguyên!", "Tài khoản đã tồn tại", 404);
-      }
+      if (existingUser.email === email) return "Email đã tồn tại";
+      if (existingUser.tai_khoan === taiKhoan) return "Tài khoản đã tồn tại";
     }
 
+    return null;
+
   }
+
+
+  private handleResponseError(res: any, message: string, statusCode: number = 400) {
+    return this.utilsService.responseSend(res, "Dữ liệu không hợp lệ!", message, statusCode);
+  }
+
+  private validateUserData(body: any, res: any): string | null {
+    const checkData = validationUser(body);
+    if (checkData) return "Dữ liệu không hợp lệ!";
+
+    if (!checkGroupCode(body.maNhom)) {
+      return "Mã nhóm không hợp lệ";
+    }
+
+    return null;
+  }
+
 
   async handleUpdateUser(body: UpdateNguoiDungDto, res: any) {
     const { taiKhoan, matKhau, email, soDt, hoTen, maNhom, maLoaiNguoiDung } = body;
 
-    let dataMessageError = (message: string) => {
-      return this.utilsService.responseSend(res, "Dữ liệu không hợp lệ!", message, 403);
-    }
 
-    let users = await this.prisma.nguoi_dung.findMany({
-      where: {
-        tai_khoan: {
-          not: taiKhoan,
-        },
-      },
+    const existingUsers = await this.findUsersByCriteria({
+      tai_khoan: { not: taiKhoan },
+      email,
     });
 
-    for (let user of users) {
-      if (user.email === email) {
-        dataMessageError("Email đã tồn tại")
-      }
+    if (existingUsers.length > 0) {
+      return this.handleResponseError(res, "Email đã tồn tại", 403);
     }
 
-    let checkData = validationUser(body);
 
-    if (checkData) {
-      dataMessageError(checkData)
-    }
+    const validationError = this.validateUserData(body, res);
+    if (validationError) return this.handleResponseError(res, validationError, 403);
 
-    if (!checkGroupCode(maNhom)) {
-
-      dataMessageError("Mã nhóm không hợp lệ")
-    }
-
-    let loaiNguoiDung = this.handleTypeUser(res, maLoaiNguoiDung)
-
-    let newUser = {
+    const loaiNguoiDung = this.handleTypeUser(res, maLoaiNguoiDung);
+    const updatedUser = {
       tai_khoan: taiKhoan,
       email,
       mat_khau: matKhau,
@@ -86,14 +94,8 @@ export class NguoiDungService {
       loai_nguoi_dung: loaiNguoiDung,
     };
 
-    await this.prisma.nguoi_dung.update({
-      where: {
-        tai_khoan: taiKhoan,
-      },
-      data: newUser,
-    });
-
-    this.utilsService.responseSend(res, "Xử lý thành công!", body, 200);
+    await this.prisma.nguoi_dung.update({ where: { tai_khoan: taiKhoan }, data: updatedUser });
+    this.utilsService.responseSend(res, "Xử lý thành công!", updatedUser, 200);
   }
 
   async getListTypeUser(res: any) {
@@ -118,7 +120,7 @@ export class NguoiDungService {
     }
   }
 
-  handleTypeUser(res: any, value: string) {
+  private handleTypeUser(res: any, value: string) {
     let valueLowerCase = value.toLowerCase()
     if (valueLowerCase != "khachhang" && valueLowerCase != "quantri") {
       return this.utilsService.responseSend(res, "Mã người dùng không hợp lệ", "", 403);
@@ -263,12 +265,13 @@ export class NguoiDungService {
     try {
       const { taiKhoan, matKhau, email, soDt, hoTen, maNhom } = body;
 
-      await this.checkDuplicateUser(taiKhoan, email, res)
+      const duplicateError = await this.checkDuplicateUser(taiKhoan, email);
+      if (duplicateError) return this.handleResponseError(res, duplicateError);
 
       let checkData = validationUser(body)
 
       if (checkData) {
-        return this.utilsService.responseSend(res, checkData, "", 403);
+        return this.utilsService.responseSend(res, "Dữ liệu không hợp lệ!", checkData, 403);
       }
       let groupCode = checkGroupCode(maNhom) ? maNhom : 'GP00';
 
@@ -662,7 +665,8 @@ export class NguoiDungService {
       }
 
 
-      await this.checkDuplicateUser(taiKhoan, email, res)
+      const duplicateError = await this.checkDuplicateUser(taiKhoan, email);
+      if (duplicateError) return this.handleResponseError(res, duplicateError);
 
       let checkData = validationUser(body)
 

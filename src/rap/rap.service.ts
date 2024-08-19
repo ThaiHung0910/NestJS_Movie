@@ -214,17 +214,17 @@ export class RapService {
                     include: object.include
                 })
 
+                if (!listCumRap) {
+                    return this.utilsService.responseSend(res, "Dữ liệu không hợp lệ!", "Mã hệ thống rạp không hợp lệ!", 400)
+                }
                 result.push(this.formatInfoShowTime(maHeThongRap, listCumRap))
-
 
             } else {
                 listCumRap = await this.prisma.he_thong_rap.findMany({
                     include: object.include
                 })
 
-
                 result.push(this.formatInfoShowTime(maHeThongRap, listCumRap))
-
             }
 
 
