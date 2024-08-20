@@ -16,13 +16,10 @@ export class NguoiDungService {
   private prisma = new PrismaClient();
   constructor(
     private readonly authService: AuthService,
-    public utilsService: UtilsService,
+    private readonly utilsService: UtilsService,
   ) { }
 
 
-  private async findUserByCriteria(criteria: any) {
-    return this.prisma.nguoi_dung.findFirst({ where: criteria });
-  }
 
   private async findUsersByCriteria(criteria: any) {
     return this.prisma.nguoi_dung.findMany({ where: criteria });
@@ -30,7 +27,7 @@ export class NguoiDungService {
 
 
 
-  async checkDuplicateUser(taiKhoan: string, email: string): Promise<string | null> {
+  private async checkDuplicateUser(taiKhoan: string, email: string): Promise<string | null> {
     const existingUser = await this.prisma.nguoi_dung.findFirst({
       where: {
         OR: [
@@ -39,14 +36,11 @@ export class NguoiDungService {
         ]
       }
     });
-
     if (existingUser) {
       if (existingUser.email === email) return "Email đã tồn tại";
       if (existingUser.tai_khoan === taiKhoan) return "Tài khoản đã tồn tại";
     }
-
     return null;
-
   }
 
 
@@ -54,9 +48,9 @@ export class NguoiDungService {
     return this.utilsService.responseSend(res, "Dữ liệu không hợp lệ!", message, statusCode);
   }
 
-  private validateUserData(body: any, res: any): string | null {
+  private validateUserData(body: any): string | null {
     const checkData = validationUser(body);
-    if (checkData) return "Dữ liệu không hợp lệ!";
+    if (checkData) return checkData;
 
     if (!checkGroupCode(body.maNhom)) {
       return "Mã nhóm không hợp lệ";
@@ -80,7 +74,7 @@ export class NguoiDungService {
     }
 
 
-    const validationError = this.validateUserData(body, res);
+    const validationError = this.validateUserData(body);
     if (validationError) return this.handleResponseError(res, validationError, 403);
 
     const loaiNguoiDung = this.handleTypeUser(res, maLoaiNguoiDung);
@@ -138,54 +132,16 @@ export class NguoiDungService {
     return loaiNguoiDung
   }
 
-
-  async findUserHaveGroupCode(maNhom: string, tuKhoa: string) {
-    let users = await this.prisma.nguoi_dung.findMany({
-      where: {
-        AND: [
-          { ma_nhom: maNhom },
-          tuKhoa ? {
-            OR: [
-              { ho_ten: { contains: tuKhoa } },
-              { tai_khoan: { contains: tuKhoa } },
-              { so_dt: { contains: tuKhoa } },
-            ]
-          } : {}
-        ]
-      }
-    });
-
-
-    return users
-  }
-
-  async findUserHaveKeyWord(tuKhoa: string) {
-    let users = await this.prisma.nguoi_dung.findMany({
-      where: {
-        AND: [
-          { ma_nhom: "GP01" },
-          {
-            OR: [
-              { ho_ten: { contains: tuKhoa } },
-              { tai_khoan: { contains: tuKhoa } },
-              { so_dt: { contains: tuKhoa } },
-            ]
-          }
-        ]
-      }
-    })
-
-    return users
-  }
-
-  async findUsers() {
-    let users = await this.prisma.nguoi_dung.findMany({
-      where: {
-        ma_nhom: "GP01"
-      }
-    })
-
-    return users
+  async findUsersWithCriteria(maNhom: string, tuKhoa: string) {
+    const criteria: any = { ma_nhom: maNhom };
+    if (tuKhoa) {
+      criteria.OR = [
+        { ho_ten: { contains: tuKhoa } },
+        { tai_khoan: { contains: tuKhoa } },
+        { so_dt: { contains: tuKhoa } },
+      ];
+    }
+    return this.findUsersByCriteria(criteria);
   }
 
 
@@ -203,25 +159,24 @@ export class NguoiDungService {
 
 
       if (!isNotEmpty(taiKhoan) || !isNotEmpty(matKhau)) {
-        dataMessageError("Dữ liệu không được để trống")
+        return dataMessageError("Dữ liệu không được để trống")
       }
-
       const isEmail = taiKhoan.includes('@');
-      let user;
+      let user: any;
 
       if (isEmail) {
         user = await this.prisma.nguoi_dung.findUnique({
           where: { email: taiKhoan },
         });
         if (!user) {
-          dataMessageError("Sai email")
+          return dataMessageError("Sai email")
         }
       } else {
         user = await this.prisma.nguoi_dung.findUnique({
           where: { tai_khoan: taiKhoan },
         });
         if (!user) {
-          dataMessageError("Tài khoản không tồn tại")
+          return dataMessageError("Tài khoản không tồn tại")
         }
       }
 
@@ -268,11 +223,9 @@ export class NguoiDungService {
       const duplicateError = await this.checkDuplicateUser(taiKhoan, email);
       if (duplicateError) return this.handleResponseError(res, duplicateError);
 
-      let checkData = validationUser(body)
+      const validationError = this.validateUserData(body);
+      if (validationError) return this.handleResponseError(res, validationError, 403);
 
-      if (checkData) {
-        return this.utilsService.responseSend(res, "Dữ liệu không hợp lệ!", checkData, 403);
-      }
       let groupCode = checkGroupCode(maNhom) ? maNhom : 'GP00';
 
 
@@ -298,37 +251,25 @@ export class NguoiDungService {
 
   async getUserListSearch(tuKhoa: string, maNhom: string, res: any) {
     try {
-      let users: any;
-      if (maNhom) {
-        if (!checkGroupCode(maNhom)) {
-          return this.utilsService.responseSend(res, "Không tìm thấy tài nguyên!", "Mã nhóm không hợp lệ", 400);
-        }
-        users = await this.findUserHaveGroupCode(maNhom, tuKhoa)
-      } else {
-        if (tuKhoa) {
-          users = await this.findUserHaveKeyWord(tuKhoa)
-        } else {
-          users = await this.findUsers()
-        }
+      if (maNhom && !checkGroupCode(maNhom)) {
+        return this.utilsService.responseSend(res, "Không tìm thấy tài nguyên!", "Mã nhóm không hợp lệ", 400);
       }
+      const users = await this.findUsersWithCriteria(maNhom || "GP01", tuKhoa);
+      let userList = []
+      if (users.length) {
+        userList = users.map((user: any) => {
+          let { tai_khoan, email, ho_ten, so_dt, mat_khau, loai_nguoi_dung } = user
 
-      if (!users.length) {
-        return this.utilsService.responseSend(res, "Không tìm thấy tài nguyên!", "Không tìm thấy người dùng", 400);
-      }
-
-      const userList = users?.map((user: any) => {
-        let { tai_khoan, email, ho_ten, so_dt, mat_khau, loai_nguoi_dung } = user
-
-        return ({
-          taiKhoan: tai_khoan,
-          email: email,
-          hoTen: ho_ten,
-          soDT: so_dt,
-          matKhau: mat_khau,
-          maLoaiNguoiDung: loai_nguoi_dung
+          return ({
+            taiKhoan: tai_khoan,
+            email: email,
+            hoTen: ho_ten,
+            soDT: so_dt,
+            matKhau: mat_khau,
+            maLoaiNguoiDung: loai_nguoi_dung
+          });
         });
-      });
-
+      }
       this.utilsService.responseSend(res, "Xử lý thành công!", userList, 200);
     } catch (err) {
       this.utilsService.responseSend(res, err.message, "", 500);
@@ -337,87 +278,46 @@ export class NguoiDungService {
 
   async getPaginationUserList(maNhom: string, tuKhoa: string, soTrang: string, soPhanTuTrenTrang: string, res: any) {
     try {
-      let numberItemPerPage = Number(soPhanTuTrenTrang), page = Number(soTrang)
-      let dataMessageError = (message: string) => {
-        return this.utilsService.responseSend(res, "Dữ liệu không hợp lệ!", message, 400);
+      let testPage = Number(soTrang), testItemPerPage = Number(soPhanTuTrenTrang)
+      if (soPhanTuTrenTrang && !Number.isInteger(testItemPerPage)) {
+        return this.handleResponseError(res, "Số phần tử trên trang không hợp lệ")
+      }
+      if (soTrang && !Number.isInteger(testPage)) {
+        return this.handleResponseError(res, "Số trang không hợp lệ")
       }
 
-      if (soPhanTuTrenTrang && !Number.isInteger(numberItemPerPage)) {
-        dataMessageError("Số phần tử trên trang không hợp lệ")
-      }
-      if (soTrang && !Number.isInteger(page)) {
-        dataMessageError("Số trang không hợp lệ")
+      if (maNhom && !checkGroupCode(maNhom)) {
+        return this.handleResponseError(res, "Mã nhóm không hợp lệ")
       }
 
+      const page = testPage || 1;
+      const itemsPerPage = testItemPerPage || 20;
 
 
-      let users: any, result = {
-        currentPage: 0,
-        count: 0,
-        totalPages: 0,
-        totalCount: 0,
-        items: []
-      }
+      const users = await this.findUsersWithCriteria(maNhom || "GP01", tuKhoa);
+      const totalUsers = users.length;
 
+      const paginatedUsers = users.slice((page - 1) * itemsPerPage, page * itemsPerPage);
 
-      if (maNhom) {
-        if (!checkGroupCode(maNhom)) {
-          dataMessageError("Mã nhóm không hợp lệ")
-        }
-
-        users = await this.findUserHaveGroupCode(maNhom, tuKhoa)
-      } else {
-        if (tuKhoa) {
-          users = await this.findUserHaveKeyWord(tuKhoa)
-        } else {
-          users = await this.findUsers()
-        }
-      }
-      let usersLength = users.length
-
-      result.currentPage = page ? page : 1
-      if (usersLength) {
-        result.totalCount = usersLength
-        result.totalPages = numberItemPerPage ? Math.ceil(usersLength / numberItemPerPage) : 1
-
-        let countItem = 0
-        users.forEach((user: any, index: any) => {
+      let result = {
+        currentPage: page,
+        count: paginatedUsers.length,
+        totalPages: Math.ceil(totalUsers / itemsPerPage),
+        totalCount: totalUsers,
+        items: paginatedUsers.map(user => {
           let { tai_khoan, email, ho_ten, so_dt, mat_khau, loai_nguoi_dung, ma_nhom } = user
-          let calculate = () => {
-            result.items.push(({
-              taiKhoan: tai_khoan,
-              matKhau: mat_khau,
-              email: email,
-              soDT: so_dt,
-              maNhom: ma_nhom,
-              hoTen: ho_ten,
-              maLoaiNguoiDung: loai_nguoi_dung
-            }))
-            countItem++
-          }
-          if (numberItemPerPage) {
-            if (page == 1) {
-              if (countItem < numberItemPerPage) {
-                calculate()
-              }
-            } else {
-              if (index >= (page - 1) * numberItemPerPage && countItem < numberItemPerPage) {
-                calculate()
-              }
-            }
-          } else {
-            if (result.currentPage < 2) {
-              calculate()
-            }
-          }
-        });
-        result.count = countItem
+
+          return ({
+            taiKhoan: tai_khoan,
+            matKhau: mat_khau,
+            email: email,
+            soDT: so_dt,
+            maNhom: ma_nhom,
+            hoTen: ho_ten,
+            maLoaiNguoiDung: loai_nguoi_dung
+          })
+        }),
       }
-
-
-
-
-
 
 
       this.utilsService.responseSend(res, "Xử lý thành công!", result, 200);
@@ -772,7 +672,7 @@ export class NguoiDungService {
       }
 
       let users = await this.prisma.nguoi_dung.findMany()
-      let nguoiDungDeleteId
+      let nguoiDungDeleteId: any
 
 
       let checkUser = false
