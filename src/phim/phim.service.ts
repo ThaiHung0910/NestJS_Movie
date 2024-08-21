@@ -15,20 +15,63 @@ export class PhimService {
     private readonly authService: AuthService
   ) { }
 
+  private handleError(res: any, message: string, details: string, statusCode: number = 500) {
+    this.utilsService.responseSend(res, message, details, statusCode);
+  }
+
+  private formatMovie(movie: any) {
+    const { ma_phim, ten_phim, trailer, hinh_anh, mo_ta, ma_nhom, ngay_khoi_chieu, danh_gia, hot, dang_chieu, sap_chieu } = movie;
+    return {
+      maPhim: ma_phim,
+      tenPhim: ten_phim,
+      trailer,
+      hinhAnh: hinh_anh,
+      moTa: mo_ta,
+      maNhom: ma_nhom,
+      ngayKhoiChieu: ngay_khoi_chieu,
+      danhGia: danh_gia,
+      hot,
+      dangChieu: dang_chieu,
+      sapChieu: sap_chieu,
+    };
+  }
+
+  private paginateMovies(movies: any[], page: number, numberItemPerPage: number) {
+    const totalCount = movies.length;
+    const totalPages = numberItemPerPage ? Math.ceil(totalCount / numberItemPerPage) : 1;
+    const currentPage = page || 1;
+    const startIndex = (currentPage - 1) * numberItemPerPage;
+    const endIndex = startIndex + numberItemPerPage;
+
+    const items = numberItemPerPage ? movies.slice(startIndex, endIndex).map(this.formatMovie) : movies.map(this.formatMovie);
+
+    return {
+      currentPage,
+      count: items.length,
+      totalPages,
+      totalCount,
+      items,
+    };
+  }
+
+  private formatDate(date: string): Date | undefined {
+    if (date) {
+      const [day, month, year] = date.split(/[\/\-]/).map(Number);
+      return new Date(year, month - 1, day);
+    }
+    return undefined;
+  }
 
 
   async getBanner(res: any) {
     try {
       let banners = await this.prisma.banner.findMany()
 
-      let result = banners.map(banner => {
-        let { ma_banner, ma_phim, hinh_anh } = banner
-        return {
-          maBanner: ma_banner,
-          maPhim: ma_phim,
-          hinhAnh: hinh_anh
-        }
-      })
+      let result = banners.map(({ ma_banner, ma_phim, hinh_anh }) => ({
+        maBanner: ma_banner,
+        maPhim: ma_phim,
+        hinhAnh: hinh_anh,
+      }))
 
       this.utilsService.responseSend(res, "Xử lý thành công!", result, 200)
     } catch (err) {
@@ -39,54 +82,17 @@ export class PhimService {
 
   async getListMovie(tenPhim: string, maNhom: string, res: any) {
     try {
-      let listMovies
-      tenPhim = tenPhim ? tenPhim.trim() : tenPhim, maNhom = maNhom ? maNhom.trim() : maNhom
-      if (maNhom) {
-        listMovies = await this.prisma.phim.findMany({
-          where: {
-            AND: [
-              tenPhim ? { ten_phim: { contains: tenPhim } } : {},
-              { ma_nhom: maNhom }
-            ]
-          }
-        })
-      } else if (tenPhim) {
-        listMovies = await this.prisma.phim.findMany({
-          where: {
-            ma_nhom: "GP01",
-            ten_phim: { contains: tenPhim }
-          }
-        })
-      } else {
-        listMovies = await this.prisma.phim.findMany(
-          {
-            where: {
-              ma_nhom: "GP01"
-            }
-          }
-        )
-      }
+      const where = {
+        AND: [
+          tenPhim ? { ten_phim: { contains: tenPhim.trim() } } : {},
+          { ma_nhom: maNhom?.trim() || "GP01" }
+        ]
+      };
 
-      if (listMovies.length) {
-        listMovies = listMovies.map((movie: any) => {
-          let { ma_phim, ten_phim, trailer, hinh_anh, mo_ta, ma_nhom, ngay_khoi_chieu, danh_gia, hot, dang_chieu, sap_chieu } = movie
-          return {
-            maPhim: ma_phim,
-            tenPhim: ten_phim,
-            trailer: trailer,
-            hinhAnh: hinh_anh,
-            moTa: mo_ta,
-            maNhom: ma_nhom,
-            ngayKhoiChieu: ngay_khoi_chieu,
-            danhGia: danh_gia,
-            hot,
-            dangChieu: dang_chieu,
-            sapChieu: sap_chieu
-          }
-        })
-      }
+      const listMovies = await this.prisma.phim.findMany({ where });
+      const formattedMovies = listMovies.map(this.formatMovie);
 
-      this.utilsService.responseSend(res, "Xử lý thành công!", listMovies, 200)
+      this.utilsService.responseSend(res, "Xử lý thành công!", formattedMovies, 200);
     } catch (err) {
       this.utilsService.responseSend(res, err.message, "", 500);
     }
@@ -95,103 +101,28 @@ export class PhimService {
   async getPaginationMovieList(maNhom: string, tenPhim: string, soTrang: number, soPhanTuTrenTrang: number, res: any) {
     try {
       let numberItemPerPage = Number(soPhanTuTrenTrang), page = Number(soTrang)
-      let dataMessageError = (message: string) => {
-        return this.utilsService.responseSend(res, "Dữ liệu không hợp lệ!", message, 400);
-      }
 
 
       if (soPhanTuTrenTrang && !Number.isInteger(numberItemPerPage)) {
-        dataMessageError("Số phần tử trên trang không hợp lệ")
+        return this.handleError(res, "Dữ liệu không hợp lệ!", "Số phần tử trên trang không hợp lệ", 400);
       }
       if (soTrang && !Number.isInteger(page)) {
-        dataMessageError("Số trang không hợp lệ")
+        return this.handleError(res, "Dữ liệu không hợp lệ!", "Số trang không hợp lệ", 400);
       }
 
-      let movies: any, result = {
-        currentPage: 0,
-        count: 0,
-        totalPages: 0,
-        totalCount: 0,
-        items: []
+      if (maNhom && !checkGroupCode(maNhom)) {
+        return this.handleError(res, "Dữ liệu không hợp lệ!", "Mã nhóm không hợp lệ", 400);
       }
 
+      const where = {
+        AND: [
+          { ma_nhom: maNhom || "GP01" },
+          tenPhim ? { ten_phim: { contains: tenPhim } } : {}
+        ]
+      };
 
-      if (maNhom) {
-        if (!checkGroupCode(maNhom)) {
-          dataMessageError("Mã nhóm không hợp lệ")
-        }
-        movies = await this.prisma.phim.findMany({
-          where: {
-            AND: [
-              { ma_nhom: maNhom },
-              tenPhim ? { ten_phim: { contains: tenPhim } } : {}
-            ]
-          }
-        });
-      } else {
-        if (tenPhim) {
-          movies = await this.prisma.phim.findMany({
-            where: {
-              AND: [
-                { ma_nhom: "GP01" },
-                { ten_phim: { contains: tenPhim } },
-              ]
-            }
-          })
-        } else {
-          movies = await this.prisma.phim.findMany({
-            where: {
-              ma_nhom: "GP01"
-            }
-          })
-        }
-      }
-
-      let moviesLength = movies.length
-
-      result.currentPage = page ? page : 1
-      if (moviesLength) {
-        result.totalCount = moviesLength
-        result.totalPages = numberItemPerPage ? Math.ceil(moviesLength / numberItemPerPage) : 1
-
-        let countItem = 0
-        movies.forEach((movie: any, index: any) => {
-          let { ma_phim, ten_phim, trailer, hinh_anh, mo_ta, ma_nhom, ngay_khoi_chieu, danh_gia, hot, dang_chieu, sap_chieu } = movie
-          let calculate = () => {
-            result.items.push(({
-              maPhim: ma_phim,
-              tenPhim: ten_phim,
-              trailer: trailer,
-              hinhAnh: hinh_anh,
-              moTa: mo_ta,
-              maNhom: ma_nhom,
-              ngayKhoiChieu: ngay_khoi_chieu,
-              danhGia: danh_gia,
-              hot,
-              dangChieu: dang_chieu,
-              sapChieu: sap_chieu
-            }))
-            countItem++
-          }
-          if (numberItemPerPage) {
-            if (page == 1) {
-              if (countItem < numberItemPerPage) {
-                calculate()
-              }
-            } else {
-              if (index >= (page - 1) * numberItemPerPage && countItem < numberItemPerPage) {
-                calculate()
-              }
-            }
-          } else {
-            if (result.currentPage < 2) {
-              calculate()
-            }
-          }
-        });
-        result.count = countItem
-      }
-
+      const movies = await this.prisma.phim.findMany({ where });
+      const result = this.paginateMovies(movies, page, numberItemPerPage);
 
       this.utilsService.responseSend(res, "Xử lý thành công!", result, 200);
     } catch (err) {
@@ -205,91 +136,43 @@ export class PhimService {
       let numberItemPerPage = Number(soPhanTuTrenTrang);
       let page = Number(soTrang);
 
-      const dataMessageError = (message: string) => {
-        return this.utilsService.responseSend(res, "Dữ liệu không hợp lệ!", message, 400);
+      if (soPhanTuTrenTrang && !Number.isInteger(numberItemPerPage)) {
+        return this.handleError(res, "Dữ liệu không hợp lệ!", "Số phần tử trên trang không hợp lệ", 400);
+      }
+      if (soTrang && !Number.isInteger(page)) {
+        return this.handleError(res, "Dữ liệu không hợp lệ!", "Số trang không hợp lệ", 400);
       }
 
-      if (numberItemPerPage && !Number.isInteger(numberItemPerPage)) {
-        return dataMessageError("Số phần tử trên trang không hợp lệ");
-      }
-      if (page && !Number.isInteger(page)) {
-        return dataMessageError("Số trang không hợp lệ");
+      if (maNhom && !checkGroupCode(maNhom)) {
+        return this.handleError(res, "Yêu cầu không hợp lệ!", "Nhóm người dùng không hợp lệ", 400);
       }
 
-      let formatDate = (date: string): Date | undefined => {
-        if (date) {
-          const [day, month, year] = date.split(/[\/\-]/).map(Number)
-          return new Date(year, month, day);
-        }
-        return undefined
-      }
-
-      const formattedTuNgay = formatDate(tuNgay);
-      const formattedDenNgay = formatDate(denNgay);
+      const formattedTuNgay = this.formatDate(tuNgay);
+      const formattedDenNgay = this.formatDate(denNgay);
 
 
       let movies: any;
 
+
       if (!formattedTuNgay && !formattedDenNgay || !formattedTuNgay) {
         movies = []
       } else {
+        const where = {
+          ma_nhom: maNhom || "GP01",
+          AND: [
+            tenPhim ? { ten_phim: { contains: tenPhim } } : {},
+            { ngay_khoi_chieu: { gte: formattedTuNgay, lte: formattedDenNgay } }
+          ]
+        };
         movies = await this.prisma.phim.findMany({
-          where: {
-            ma_nhom: maNhom || "GP01",
-            AND: [
-              tenPhim ? { ten_phim: { contains: tenPhim } } : {},
-              {
-                ngay_khoi_chieu: {
-                  gte: formattedTuNgay ? formattedTuNgay : undefined,
-                  lte: formattedDenNgay ? formattedDenNgay : undefined,
-                }
-              }
-            ]
-          }
+          where
         });
 
       }
 
+      const result = this.paginateMovies(movies, page, numberItemPerPage);
 
-      let result = [];
-      if (movies.length) {
-        let countItem = 0;
-        movies.forEach((movie: any, index: number) => {
-          let { ma_phim, ten_phim, trailer, hinh_anh, mo_ta, ma_nhom, ngay_khoi_chieu, danh_gia, hot, dang_chieu, sap_chieu } = movie
-          let calculate = () => {
-            result.push({
-              maPhim: ma_phim,
-              tenPhim: ten_phim,
-              trailer: trailer,
-              hinhAnh: hinh_anh,
-              moTa: mo_ta,
-              maNhom: ma_nhom,
-              ngayKhoiChieu: ngay_khoi_chieu,
-              danhGia: danh_gia,
-              hot,
-              dangChieu: dang_chieu,
-              sapChieu: sap_chieu
-            });
-            countItem++;
-          }
-          if (numberItemPerPage) {
-            if (page == 1) {
-              if (countItem < numberItemPerPage) {
-                calculate()
-              }
-            } else {
-              if (index >= (page - 1) * numberItemPerPage && countItem < numberItemPerPage) {
-                calculate()
-              }
-            }
-          }
-        });
-      }
-
-
-
-
-      this.utilsService.responseSend(res, "Xử lý thành công!", result, 200);
+      this.utilsService.responseSend(res, "Xử lý thành công!", result.items, 200);
     } catch (err) {
       this.utilsService.responseSend(res, err.message, "", 500);
     }
@@ -298,9 +181,8 @@ export class PhimService {
 
   async getInfoMovie(maPhim: string, res: any) {
     try {
-      let dataMessageError = () => this.utilsService.responseSend(res, "Không tìm thấy tài nguyên!", "Mã phim không hợp lệ", 400);
       if (!maPhim) {
-        dataMessageError()
+        return this.handleError(res, "Không tìm thấy tài nguyên!", "Mã phim không hợp lệ", 400);
       }
 
 
@@ -311,25 +193,10 @@ export class PhimService {
       })
 
       if (!movie) {
-        dataMessageError()
-
+        return this.handleError(res, "Không tìm thấy tài nguyên!", "Mã phim không hợp lệ", 400);
       }
 
-      let { ten_phim, trailer, hinh_anh, mo_ta, ngay_khoi_chieu, danh_gia, hot, dang_chieu, sap_chieu } = movie
-
-      let result = {
-        maPhim,
-        tenPhim: ten_phim,
-        trailer,
-        hinhAnh: hinh_anh,
-        moTa: mo_ta,
-        hot,
-        dangChieu: dang_chieu,
-        sapChieu: sap_chieu,
-        ngayKhoiChieu: ngay_khoi_chieu,
-        danhGia: danh_gia
-      }
-
+      const result = this.formatMovie(movie);
       this.utilsService.responseSend(res, "Xử lý thành công!", result, 200);
 
     } catch (err) {
@@ -343,7 +210,7 @@ export class PhimService {
 
       let validationMessage = validationMovie(body)
       if (validationMessage) {
-        return this.utilsService.responseSend(res, "Dữ liệu không hợp lệ!", validationMessage, 403);
+        return this.handleError(res, "Dữ liệu không hợp lệ!", validationMessage, 403);
       }
 
       let movie = await this.prisma.phim.findFirst({
@@ -351,6 +218,10 @@ export class PhimService {
           ten_phim: tenPhim
         }
       })
+
+      if (!movie) {
+        return this.handleError(res, "Dữ liệu không hợp lệ!", "Không tìm thấy phim!", 403);
+      }
 
       let newMovie = {
         ten_phim: tenPhim,
@@ -364,9 +235,7 @@ export class PhimService {
         dang_chieu: Boolean(dangChieu),
         sap_chieu: Boolean(sapChieu),
       }
-      if (!movie) {
-        return this.utilsService.responseSend(res, "Dữ liệu không hợp lệ!", "Không tìm thấy phim!", 403);
-      }
+
 
       await this.prisma.phim.update({
         where: {
@@ -388,8 +257,9 @@ export class PhimService {
 
       let validationMessage = validationMovie(body)
       if (validationMessage) {
-        return this.utilsService.responseSend(res, "Dữ liệu không hợp lệ!", validationMessage, 403);
+        return this.handleError(res, "Dữ liệu không hợp lệ!", validationMessage, 403);
       }
+
 
       let newMovie = {
         ten_phim: tenPhim,
@@ -407,6 +277,7 @@ export class PhimService {
       await this.prisma.phim.create({
         data: newMovie
       })
+
 
       this.utilsService.responseSend(res, "Xử lý thành công!", body, 200);
     } catch (err) {
@@ -441,7 +312,7 @@ export class PhimService {
       })
 
       if (!movie) {
-        return this.utilsService.responseSend(res, "Dữ liệu không hợp lệ", 'Mã phim không hợp lệ', 403)
+        return this.handleError(res, "Không tìm thấy tài nguyên!", "Mã phim không hợp lệ", 400);
       }
 
       await this.prisma.phim.delete({
