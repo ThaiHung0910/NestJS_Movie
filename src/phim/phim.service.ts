@@ -218,7 +218,7 @@ export class PhimService {
 
       let formatDate = (date: string): Date | undefined => {
         if (date) {
-          const [day, month, year] = date.split('/').map(Number);
+          const [day, month, year] = date.split(/[\/\-]/).map(Number)
           return new Date(year, month, day);
         }
         return undefined
@@ -230,7 +230,7 @@ export class PhimService {
 
       let movies: any;
 
-      if (!formattedTuNgay && !formattedDenNgay) {
+      if (!formattedTuNgay && !formattedDenNgay || !formattedTuNgay) {
         movies = []
       } else {
         movies = await this.prisma.phim.findMany({

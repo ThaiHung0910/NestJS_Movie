@@ -31,18 +31,28 @@ export class DatVeService {
         return new Date(year, month - 1, day, hours, minutes, seconds);
     }
 
+    handleError(res: any, message: string, content: string, statusCode = 500) {
+        return this.utilsService.responseSend(res, message, content, statusCode);
+    }
+
+
+    async checkUserPermission(nguoiDungId: number, res: any) {
+        const user = await this.prisma.nguoi_dung.findUnique({
+            where: { ma_nguoi_dung: nguoiDungId },
+        });
+
+        if (!user || user.loai_nguoi_dung === 'KhachHang') {
+            return this.handleError(res, 'Unauthorized', 'Bạn không đủ quyền tạo', 403);
+        }
+        return user;
+    }
+
     async bookTicket(body: any, req: any, res: any) {
         try {
 
             let nguoiDungId = this.utilsService.getUserIdFromAuthorization(this.authService, req)
 
-            let user = await this.prisma.nguoi_dung.findUnique({
-                where: { ma_nguoi_dung: nguoiDungId }
-            })
-
-            if (user.loai_nguoi_dung == "KhachHang") {
-                return this.utilsService.responseSend(res, "", "Bạn không đủ quyền tạo", 403);
-            }
+            await this.checkUserPermission(nguoiDungId, res);
 
             let { maLichChieu, danhSachVe } = body
 
@@ -50,40 +60,27 @@ export class DatVeService {
             maLichChieu = this.checkValueNumber(maLichChieu, res, "Không tìm thấy tài nguyên!", 'Mã lịch chiếu không hợp lệ!')
 
 
-
-
-
             let lichChieuPhim = await this.prisma.lich_chieu.findUnique({
                 where: { ma_lich_chieu: maLichChieu }
             })
 
             if (!lichChieuPhim) {
-                return this.utilsService.responseSend(res, "Không tìm thấy tài nguyên!", 'Mã lịch chiếu không tồn tại!', 400)
+                return this.handleError(res, 'Không tìm thấy tài nguyên!', 'Mã lịch chiếu không tồn tại!', 400);
             }
 
 
 
-            const maGheArray = danhSachVe.map(item => {
-                let maGhe = item.maGhe;
-                maGhe = this.checkValueNumber(maGhe, res, "Giá trị không hợp lệ!", 'Mã ghế phải là một số!')
-
-                return maGhe;
-            });
-            let ghe
-
+            const maGheArray = danhSachVe.map(item => this.checkValueNumber(item.maGhe, res, 'Giá trị không hợp lệ!', 'Mã ghế phải là một số!'));
             if (maGheArray.length) {
-                ghe = await this.prisma.ghe.findMany({
+                const ghe = await this.prisma.ghe.findMany({
                     where: {
-                        ma_ghe: {
-                            in: maGheArray,
-                        },
+                        ma_ghe: { in: maGheArray },
                     },
                 });
-            }
 
-
-            if (!maGheArray.length || ghe.length < maGheArray.length) {
-                return this.utilsService.responseSend(res, "Không tìm thấy tài nguyên!", 'Mã ghế không tồn tại!', 404)
+                if (ghe.length < maGheArray.length) {
+                    return this.handleError(res, 'Không tìm thấy tài nguyên!', 'Mã ghế không tồn tại!', 404);
+                }
             }
 
 
@@ -107,13 +104,8 @@ export class DatVeService {
 
     async getListTicketRoom(maLichChieu: string, res: any) {
         try {
-
-            let dataMessageError = () => {
-                return this.utilsService.responseSend(res, "Dữ liệu không hợp lệ!", "Mã lịch chiếu không hợp lệ!", 400)
-            }
-
             if (!maLichChieu || isNaN(Number(maLichChieu))) {
-                dataMessageError()
+                return this.handleError(res, 'Dữ liệu không hợp lệ!', 'Mã lịch chiếu không hợp lệ!', 400);
             }
 
 
@@ -131,7 +123,7 @@ export class DatVeService {
             })
 
             if (!lichChieuPhim) {
-                dataMessageError()
+                return this.handleError(res, 'Không tìm thấy tài nguyên!', 'Mã lịch chiếu không tồn tại!', 400);
             }
 
             let { ngay_gio_chieu, gia_ve, ma_rap } = lichChieuPhim
@@ -184,24 +176,12 @@ export class DatVeService {
     }
 
     async createSchedule(body: any, req: any, res: any) {
-
-
         try {
-            let dataMessageError = (message: string, content: string) => {
-                this.utilsService.responseSend(res, message, content, 500)
-            }
-
             let { maPhim, ngayChieuGioChieu, maRap, giaVe } = body
-            let nguoiDungId = this.utilsService.getUserIdFromAuthorization(this.authService, req)
+            const nguoiDungId = this.utilsService.getUserIdFromAuthorization(this.authService, req);
 
+            await this.checkUserPermission(nguoiDungId, res);
 
-            let user = await this.prisma.nguoi_dung.findUnique({
-                where: { ma_nguoi_dung: nguoiDungId },
-            })
-
-            if (user.loai_nguoi_dung == "KhachHang") {
-                return this.utilsService.responseSend(res, "", "Bạn không đủ quyền tạo", 403);
-            }
 
             maPhim = this.checkValueNumber(maPhim, res, "Dữ liệu không hợp lệ!", "MaPhim không hợp lệ")
             maRap = this.checkValueNumber(maRap, res, "Không tìm thấy tài nguyên!", "Chọn sai cụm rạp!",)
@@ -212,11 +192,11 @@ export class DatVeService {
             })
 
             if (!movie) {
-                return dataMessageError("Dữ liệu không hợp lệ!", "MaPhim không hợp lệ")
+                return this.handleError(res, 'Dữ liệu không hợp lệ!', 'MaPhim không hợp lệ');
             }
 
             if (!this.isValidDateTime(ngayChieuGioChieu)) {
-                return this.utilsService.responseSend(res, "Dữ liệu không hợp lệ!", "Ngày chiếu không hợp lệ, Ngày chiếu phải có định dạng dd/MM/yyyy hh:mm:ss !", 500)
+                return this.handleError(res, 'Dữ liệu không hợp lệ!', 'Ngày chiếu không hợp lệ, phải có định dạng: dd/mm/yyyy hh:mm:ss');
             }
 
             let cumRap = await this.prisma.cum_rap.findUnique({
@@ -227,11 +207,11 @@ export class DatVeService {
             })
 
             if (!cumRap) {
-                return dataMessageError("Không tìm thấy tài nguyên!", "Chọn sai cụm rạp!")
+                return this.handleError(res, "Không tìm thấy tài nguyên!", "Chọn sai cụm rạp!")
             }
 
             if (giaVe < 75000 || giaVe > 200000) {
-                return dataMessageError("Không tìm thấy tài nguyên!", "Giá từ 75.000 - 200.000")
+                return this.handleError(res, "Không tìm thấy tài nguyên!", "Giá từ 75.000 - 200.000")
             }
 
             let maRapFromCumRap = cumRap.rap_phim[0].ma_rap
@@ -251,7 +231,7 @@ export class DatVeService {
             });
 
             if (existingSchedule) {
-                return dataMessageError("Không tìm thấy tài nguyên!", "Lịch chiếu đã bị trùng",)
+                return this.handleError(res, "Không tìm thấy tài nguyên!", "Lịch chiếu đã bị trùng",)
             }
 
 
@@ -260,8 +240,6 @@ export class DatVeService {
             })
 
             this.utilsService.responseSend(res, "Xử lý thành công!", "Thêm lịch chiếu thành công!", 200)
-
-
         } catch (err) {
             this.utilsService.responseSend(res, '', err.message, 500)
         }

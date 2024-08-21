@@ -99,7 +99,7 @@ export class RapService {
             let listTheaters, result
             if (maHeThongRap) {
                 if (!isValidNumber(maHeThongRap)) {
-                    dataMessageError()
+                    return dataMessageError()
                 }
 
                 let theater = await this.prisma.he_thong_rap.findUnique({
@@ -108,7 +108,7 @@ export class RapService {
                     }
                 })
                 if (!theater) {
-                    dataMessageError()
+                    return dataMessageError()
                 }
 
                 result = this.formatTheaterSystem(theater);
@@ -133,7 +133,7 @@ export class RapService {
                 let dataMessageError = () => this.utilsService.responseSend(res, "Không tìm thấy tài nguyên!", 'Mã hệ thống rạp không tồn tại!', 400);
 
                 if (!isValidNumber(maHeThongRap)) {
-                    dataMessageError()
+                    return dataMessageError()
                 }
 
                 let listTheaters = await this.prisma.cum_rap.findMany({
@@ -146,7 +146,7 @@ export class RapService {
                 })
 
                 if (!listTheaters.length) {
-                    dataMessageError()
+                    return dataMessageError()
                 }
 
 
