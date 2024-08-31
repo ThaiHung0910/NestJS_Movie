@@ -2,8 +2,9 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, Res, Query, UseGuard
 import { PhimService } from './phim.service';
 import { CreatePhimDto } from './dto/create-phim.dto';
 import { ApiQuery, ApiTags, ApiBearerAuth } from '@nestjs/swagger';
-import { AuthGuard } from '@nestjs/passport';
 import { UpdatePhimDto } from './dto/update-phim.dto';
+import { Authenticated } from 'src/utils/decorator';
+
 
 
 @ApiTags("QuanLyPhim")
@@ -74,8 +75,7 @@ export class PhimController {
 
 
 
-  @ApiBearerAuth()
-  @UseGuards(AuthGuard("jwt"))
+  @Authenticated()
   @ApiQuery({ name: 'MaPhim', required: false })
   @Delete('XP')
   deleteMovie(@Query('MaPhim') query: string, @Req() req: Request, @Res() res: any) {
@@ -83,8 +83,7 @@ export class PhimController {
     return this.phimService.removeMovie(query, authorization, res);
   }
 
-  @ApiBearerAuth()
-  @UseGuards(AuthGuard("jwt"))
+  @Authenticated()
   @ApiQuery({ name: 'MaPhim', required: false })
   @Delete('XoaPhim')
   removeMovie(@Query('MaPhim') query: string, @Req() req: Request, @Res() res: any) {

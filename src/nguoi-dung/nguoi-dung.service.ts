@@ -117,7 +117,7 @@ export class NguoiDungService {
   private handleTypeUser(res: any, value: string) {
     let valueLowerCase = value.toLowerCase()
     if (valueLowerCase != "khachhang" && valueLowerCase != "quantri") {
-      return this.utilsService.responseSend(res, "Mã người dùng không hợp lệ", "", 403);
+      return this.handleResponseError(res, "Mã người dùng không hợp lệ", 403)
     }
 
     let loaiNguoiDung: any

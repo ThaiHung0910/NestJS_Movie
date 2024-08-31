@@ -3,9 +3,10 @@ import { NguoiDungService } from './nguoi-dung.service';
 import { CreateNguoiDungDto } from './dto/create-nguoi-dung.dto';
 import { UpdateNguoiDungDto } from './dto/update-nguoi-dung.dto';
 import { LoginNguoiDungDto } from './dto/login-nguoi-dung.dto';
-import { ApiBearerAuth, ApiBody, ApiQuery, ApiTags } from '@nestjs/swagger';
-import { AuthGuard } from '@nestjs/passport';
+import { ApiBody, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { SignUpNguoiDungDto } from './dto/signUp-nguoi-dung.dto';
+import { Authenticated, CommonQueryUser, QueryPage } from 'src/utils/decorator';
+
 
 
 
@@ -50,51 +51,41 @@ export class NguoiDungController {
 
 
   @Get('LayDanhSachNguoiDung')
-  @ApiQuery({ name: 'MaNhom', required: false, example: 'GP01' })
-  @ApiQuery({ name: 'tuKhoa', required: false })
+  @CommonQueryUser()
   getListUser(@Query('MaNhom') MaNhom: string, @Query('tuKhoa') tuKhoa: string, @Res() res: any) {
     return this.nguoiDungService.getUserListSearch(tuKhoa, MaNhom, res);
   }
 
   @Get('LayDanhSachNguoiDungPhanTrang')
-  @ApiQuery({ name: 'MaNhom', required: false, example: 'GP01' })
-  @ApiQuery({ name: 'tuKhoa', required: false })
-  @ApiQuery({ name: 'soTrang', required: false, example: '1' })
-  @ApiQuery({ name: 'soPhanTuTrenTrang', required: false, example: '20' })
+  @CommonQueryUser()
+  @QueryPage("20")
   getPaginationUserList(@Query('MaNhom') MaNhom: string, @Query('tuKhoa') tuKhoa: string, @Query('soTrang') soTrang: string, @Query('soPhanTuTrenTrang') soPhanTuTrenTrang: string, @Res() res: any) {
     return this.nguoiDungService.getPaginationUserList(MaNhom, tuKhoa, soTrang, soPhanTuTrenTrang, res);
   }
 
 
   @Get('TimKiemNguoiDung')
-  @ApiQuery({ name: 'MaNhom', required: false, example: 'GP01' })
-  @ApiQuery({ name: 'tuKhoa', required: false })
+  @CommonQueryUser()
   findListUser(@Query('MaNhom') MaNhom: string, @Query('tuKhoa') tuKhoa: string, @Res() res: Response) {
     return this.nguoiDungService.getUserListSearch(tuKhoa, MaNhom, res);
   }
 
 
   @Get('TimKiemNguoiDungPhanTrang')
-  @ApiQuery({ name: 'MaNhom', required: false, example: 'GP01' })
-  @ApiQuery({ name: 'tuKhoa', required: false })
-  @ApiQuery({ name: 'soTrang', required: false, example: '1' })
-  @ApiQuery({ name: 'soPhanTuTrenTrang', required: false, example: '1' })
+  @CommonQueryUser()
+  @QueryPage("1")
   findPaginationUserList(@Query('MaNhom') MaNhom: string, @Query('tuKhoa') tuKhoa: string, @Query('soTrang') soTrang: string, @Query('soPhanTuTrenTrang') soPhanTuTrenTrang: string, @Res() res: any) {
     return this.nguoiDungService.getPaginationUserList(MaNhom, tuKhoa, soTrang, soPhanTuTrenTrang, res);
   }
 
-  @HttpCode(200)
-  @ApiBearerAuth()
-  @UseGuards(AuthGuard("jwt"))
+  @Authenticated()
   @Post('ThongTinTaiKhoan')
   getInfoOwner(@Req() req: Request, @Res() res: Response) {
     const authorization = req.headers;
     return this.nguoiDungService.getInfoOwner(authorization, res);
   }
 
-  @HttpCode(200)
-  @ApiBearerAuth()
-  @UseGuards(AuthGuard("jwt"))
+  @Authenticated()
   @ApiQuery({ name: 'taiKhoan', required: false })
   @Post('LayThongTinNguoiDung')
   getInfoUser(@Query("taiKhoan") query: string, @Req() req: Request, @Res() res: Response) {
@@ -104,9 +95,7 @@ export class NguoiDungController {
 
 
 
-  @HttpCode(200)
-  @ApiBearerAuth()
-  @UseGuards(AuthGuard("jwt"))
+  @Authenticated()
   @ApiBody({
     description: 'nd',
     type: CreateNguoiDungDto,
@@ -120,8 +109,7 @@ export class NguoiDungController {
 
 
 
-  @ApiBearerAuth()
-  @UseGuards(AuthGuard("jwt"))
+  @Authenticated()
   @ApiBody({
     description: 'nd',
     type: UpdateNguoiDungDto,
@@ -133,9 +121,7 @@ export class NguoiDungController {
     return this.nguoiDungService.updateOwner(body, authorization, res);
   }
 
-  @HttpCode(200)
-  @ApiBearerAuth()
-  @UseGuards(AuthGuard("jwt"))
+  @Authenticated()
   @ApiBody({
     description: 'nd',
     type: UpdateNguoiDungDto,
@@ -149,8 +135,7 @@ export class NguoiDungController {
 
 
 
-  @ApiBearerAuth()
-  @UseGuards(AuthGuard("jwt"))
+  @Authenticated()
   @ApiQuery({ name: 'TaiKhoan', required: false })
   @Delete('XoaNguoiDung')
   remove(@Query('TaiKhoan') TaiKhoan: string, @Req() req: Request, @Res() res: Response) {
