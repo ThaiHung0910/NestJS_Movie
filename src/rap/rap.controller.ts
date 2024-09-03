@@ -1,7 +1,7 @@
 import { Controller, Get, Res, Query } from '@nestjs/common';
 import { RapService } from './rap.service';
 import { ApiQuery, ApiTags } from '@nestjs/swagger';
-
+import { QueryCodeMovie, QueryCodeTheater } from 'src/utils/decorator';
 
 
 
@@ -11,25 +11,25 @@ export class RapController {
   constructor(private readonly rapService: RapService) { }
 
 
-  @ApiQuery({ name: "maHeThongRap", required: false })
+  @QueryCodeTheater()
   @Get('LayThongTinHeThongRap')
   getTheatersSystem(@Query('maHeThongRap') query: string, @Res() res: any) {
     return this.rapService.getTheaterSystem(query, res);
   }
 
-  @ApiQuery({ name: 'maHeThongRap', required: false })
+  @QueryCodeTheater()
   @Get("LayThongTinCumRapTheoHeThong")
   getTheaterComplex(@Query("maHeThongRap") query: string, @Res() res: any) {
     return this.rapService.getTheaterComplex(query, res)
   }
 
-  @ApiQuery({ name: 'maHeThongRap', required: false })
+  @QueryCodeTheater()
   @Get("LayThongTinLichChieuHeThongRap")
   getInfoShowtimesSystem(@Query("maHeThongRap") query: string, @Res() res: any) {
     return this.rapService.getInfoShowtimesSystem(query, res)
   }
 
-  @ApiQuery({ name: 'MaPhim', required: false })
+  @QueryCodeMovie()
   @Get("LayThongTinLichChieuPhim")
   getInfoMovie(@Query("MaPhim") query: string, @Res() res: any) {
     return this.rapService.getInfoMovie(query, res)

@@ -181,7 +181,7 @@ export class PhimService {
 
   async getInfoMovie(maPhim: string, res: any) {
     try {
-      if (!maPhim) {
+      if (!maPhim || isNaN(Number(maPhim))) {
         return this.handleError(res, "Không tìm thấy tài nguyên!", "Mã phim không hợp lệ", 400);
       }
 

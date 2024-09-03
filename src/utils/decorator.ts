@@ -12,18 +12,26 @@ function Authenticated() {
 }
 
 
-function CommonQueryUser() {
+function QueryUser() {
     return applyDecorators(
         ApiQuery({ name: 'MaNhom', required: false, example: 'GP01' }),
         ApiQuery({ name: 'tuKhoa', required: false })
     );
 }
 
-function CommonQueryMovie() {
+
+
+function QueryMovie() {
     return applyDecorators(
-        ApiQuery({ name: 'maNhom', required: false, example: 'GP01' }),
-        ApiQuery({ name: 'tuKhoa', required: false })
-    );
+        ApiQuery({ name: 'maNhom', required: false, example: "GP01" }),
+        ApiQuery({ name: 'tenPhim', required: false })
+    )
+}
+
+function QueryCodeMovie() {
+    return applyDecorators(
+        ApiQuery({ name: "MaPhim", required: false })
+    )
 }
 
 function QueryPage(number: any) {
@@ -33,5 +41,11 @@ function QueryPage(number: any) {
     )
 }
 
+function QueryCodeTheater() {
+    return applyDecorators(
+        ApiQuery({ name: 'maHeThongRap', required: false })
+    )
+}
 
-export { Authenticated, CommonQueryUser, CommonQueryMovie, QueryPage }
+
+export { Authenticated, QueryUser, QueryMovie, QueryCodeMovie, QueryPage, QueryCodeTheater }

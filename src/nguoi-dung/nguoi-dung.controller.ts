@@ -1,11 +1,11 @@
-import { Controller, Get, Post, Body, Put, Delete, Query, Res, UseGuards, Req, HttpCode, } from '@nestjs/common';
+import { Controller, Get, Post, Body, Put, Delete, Query, Res, Req, HttpCode, } from '@nestjs/common';
 import { NguoiDungService } from './nguoi-dung.service';
 import { CreateNguoiDungDto } from './dto/create-nguoi-dung.dto';
 import { UpdateNguoiDungDto } from './dto/update-nguoi-dung.dto';
 import { LoginNguoiDungDto } from './dto/login-nguoi-dung.dto';
 import { ApiBody, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { SignUpNguoiDungDto } from './dto/signUp-nguoi-dung.dto';
-import { Authenticated, CommonQueryUser, QueryPage } from 'src/utils/decorator';
+import { Authenticated, QueryUser, QueryPage } from 'src/utils/decorator';
 
 
 
@@ -51,13 +51,13 @@ export class NguoiDungController {
 
 
   @Get('LayDanhSachNguoiDung')
-  @CommonQueryUser()
+  @QueryUser()
   getListUser(@Query('MaNhom') MaNhom: string, @Query('tuKhoa') tuKhoa: string, @Res() res: any) {
     return this.nguoiDungService.getUserListSearch(tuKhoa, MaNhom, res);
   }
 
   @Get('LayDanhSachNguoiDungPhanTrang')
-  @CommonQueryUser()
+  @QueryUser()
   @QueryPage("20")
   getPaginationUserList(@Query('MaNhom') MaNhom: string, @Query('tuKhoa') tuKhoa: string, @Query('soTrang') soTrang: string, @Query('soPhanTuTrenTrang') soPhanTuTrenTrang: string, @Res() res: any) {
     return this.nguoiDungService.getPaginationUserList(MaNhom, tuKhoa, soTrang, soPhanTuTrenTrang, res);
@@ -65,14 +65,14 @@ export class NguoiDungController {
 
 
   @Get('TimKiemNguoiDung')
-  @CommonQueryUser()
+  @QueryUser()
   findListUser(@Query('MaNhom') MaNhom: string, @Query('tuKhoa') tuKhoa: string, @Res() res: Response) {
     return this.nguoiDungService.getUserListSearch(tuKhoa, MaNhom, res);
   }
 
 
   @Get('TimKiemNguoiDungPhanTrang')
-  @CommonQueryUser()
+  @QueryUser()
   @QueryPage("1")
   findPaginationUserList(@Query('MaNhom') MaNhom: string, @Query('tuKhoa') tuKhoa: string, @Query('soTrang') soTrang: string, @Query('soPhanTuTrenTrang') soPhanTuTrenTrang: string, @Res() res: any) {
     return this.nguoiDungService.getPaginationUserList(MaNhom, tuKhoa, soTrang, soPhanTuTrenTrang, res);

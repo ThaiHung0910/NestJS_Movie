@@ -1,9 +1,10 @@
-import { Body, Controller, Get, HttpCode, Post, Query, Req, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, Req, Res } from '@nestjs/common';
 import { DatVeService } from './dat-ve.service';
-import { ApiBearerAuth, ApiBody, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { CreateTicketDto } from './dto/create-ticket.dto';
-import { AuthGuard } from '@nestjs/passport';
 import { CreateScheduleDto } from './dto/create-schedule.dts';
+import { Authenticated } from 'src/utils/decorator';
+
 
 
 @ApiTags("QuanLyDatVe")
@@ -12,9 +13,7 @@ export class DatVeController {
   constructor(private readonly datVeService: DatVeService) {
   }
 
-  @HttpCode(200)
-  @ApiBearerAuth()
-  @UseGuards(AuthGuard("jwt"))
+  @Authenticated()
   @ApiBody({
     description: 'DanhSachVe',
     type: CreateTicketDto,
@@ -34,9 +33,7 @@ export class DatVeController {
   }
 
 
-  @HttpCode(200)
-  @ApiBearerAuth()
-  @UseGuards(AuthGuard("jwt"))
+  @Authenticated()
   @ApiBody({
     description: 'lich',
     type: CreateScheduleDto,
